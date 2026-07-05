@@ -6,17 +6,26 @@ sync_dir() {
   local dst="$2"
   mkdir -p "$dst"
   if command -v rsync >/dev/null 2>&1; then
-    rsync -a --delete "$src"/ "$dst"/
+    rsync -a --delete \
+      --exclude "__pycache__/" \
+      --exclude "*.pyc" \
+      --exclude "*.pyo" \
+      --exclude ".DS_Store" \
+      "$src"/ "$dst"/
   else
     rm -rf "$dst"
     mkdir -p "$dst"
     cp -R "$src"/. "$dst"/
+    find "$dst" -type d -name "__pycache__" -prune -exec rm -rf {} + || true
+    find "$dst" -type f \( -name "*.pyc" -o -name "*.pyo" -o -name ".DS_Store" \) -delete || true
   fi
 }
 
 sync_dir "${SRCROOT}/app" "${SRCROOT}/mac_app/BackendBundle/app"
 sync_dir "${SRCROOT}/static" "${SRCROOT}/mac_app/BackendBundle/static"
-sync_dir "${SRCROOT}/data" "${SRCROOT}/mac_app/BackendBundle/data"
+rm -rf "${SRCROOT}/mac_app/BackendBundle/data"
+mkdir -p "${SRCROOT}/mac_app/BackendBundle/data"
+touch "${SRCROOT}/mac_app/BackendBundle/data/.gitkeep"
 cp "${SRCROOT}/main.py" "${SRCROOT}/mac_app/BackendBundle/main.py"
 cp "${SRCROOT}/requirements.txt" "${SRCROOT}/mac_app/BackendBundle/requirements.txt"
 touch "${SRCROOT}/mac_app/BackendBundle"

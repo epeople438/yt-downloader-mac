@@ -19,6 +19,8 @@ fi
 
 echo "[INFO] Preparing backend bundle (source + pinned runtime)..."
 SRCROOT="$ROOT_DIR" "$ROOT_DIR/mac_app/scripts/xcode_prepare_backend.sh"
+find "$ROOT_DIR/mac_app/BackendBundle" -type d -name "__pycache__" -prune -exec rm -rf {} + || true
+find "$ROOT_DIR/mac_app/BackendBundle" -type f \( -name "*.pyc" -o -name "*.pyo" -o -name ".DS_Store" -o -name "config.json" -o -name "tasks_state.json" \) -delete || true
 
 mkdir -p "$BUILD_ROOT" "$DIST_DIR"
 rm -rf "$ARCHIVE_PATH" "$EXPORT_DIR" "$DMG_PATH"
@@ -34,6 +36,8 @@ xcodebuild \
 
 mkdir -p "$EXPORT_DIR"
 ditto "$ARCHIVE_PATH/Products/Applications/$APP_NAME" "$EXPORT_DIR/$APP_NAME"
+find "$EXPORT_DIR/$APP_NAME" -type d -name "__pycache__" -prune -exec rm -rf {} + || true
+find "$EXPORT_DIR/$APP_NAME" -type f \( -name "*.pyc" -o -name "*.pyo" -o -name ".DS_Store" -o -name "config.json" -o -name "tasks_state.json" \) -delete || true
 
 if ! hdiutil create \
   -volname "$SCHEME" \
