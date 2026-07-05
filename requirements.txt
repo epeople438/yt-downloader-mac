@@ -1,0 +1,11 @@
+fastapi>=0.110
+uvicorn[standard]>=0.27
+# 2026.02.04 currently returns only storyboard/image formats for some YouTube
+# videos in the embedded runtime. 2025.12.08 still exposes HLS media formats.
+yt-dlp==2025.12.08
+# Optional but recommended: bundles EJS components locally (reduces reliance on
+# remote downloads)
+yt-dlp-ejs==0.3.2
+pydantic>=2.6
+python-multipart>=0.0.9
+imageio-ffmpeg>=0.5.1

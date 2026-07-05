@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+sync_dir() {
+  local src="$1"
+  local dst="$2"
+  mkdir -p "$dst"
+  if command -v rsync >/dev/null 2>&1; then
+    rsync -a --delete "$src"/ "$dst"/
+  else
+    rm -rf "$dst"
+    mkdir -p "$dst"
+    cp -R "$src"/. "$dst"/
+  fi
+}
+
+sync_dir "${SRCROOT}/app" "${SRCROOT}/mac_app/BackendBundle/app"
+sync_dir "${SRCROOT}/static" "${SRCROOT}/mac_app/BackendBundle/static"
+sync_dir "${SRCROOT}/data" "${SRCROOT}/mac_app/BackendBundle/data"
+cp "${SRCROOT}/main.py" "${SRCROOT}/mac_app/BackendBundle/main.py"
+cp "${SRCROOT}/requirements.txt" "${SRCROOT}/mac_app/BackendBundle/requirements.txt"
+touch "${SRCROOT}/mac_app/BackendBundle"
+
+PREPARE_SCRIPT="${SRCROOT}/mac_app/scripts/prepare_embedded_runtime.sh"
+RUNTIME_DIR="${SRCROOT}/mac_app/BackendBundle/runtime"
+REQUIREMENTS_HASH="$(shasum "${SRCROOT}/requirements.txt" | awk '{print $1}')"
+RUNTIME_HASH_FILE="${RUNTIME_DIR}/.requirements_hash"
+INSTALLED_REQUIREMENTS_HASH=""
+if [ -f "${RUNTIME_HASH_FILE}" ]; then
+  INSTALLED_REQUIREMENTS_HASH="$(cat "${RUNTIME_HASH_FILE}")"
+fi
+
+if [ ! -x "${PREPARE_SCRIPT}" ]; then
+  echo "[Xcode] WARN: prepare script not found: ${PREPARE_SCRIPT}"
+  exit 0
+fi
+
+if [ ! -d "${RUNTIME_DIR}/python/Python.framework" ] || [ ! -d "${RUNTIME_DIR}/site-packages" ] || [ "${REQUIREMENTS_HASH}" != "${INSTALLED_REQUIREMENTS_HASH}" ]; then
+  echo "[Xcode] Embedded runtime missing or requirements changed, preparing..."
+  "${PREPARE_SCRIPT}"
+  mkdir -p "${RUNTIME_DIR}"
+  echo "${REQUIREMENTS_HASH}" > "${RUNTIME_HASH_FILE}"
+else
+  echo "[Xcode] Embedded runtime already exists, skip."
+fi

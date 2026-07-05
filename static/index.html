@@ -1,0 +1,4739 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>YouTube Downloader Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --bg-app: #e7edf5;
+            --bg-gradient-a: #f8fbff;
+            --bg-gradient-b: #e6edf6;
+            --panel: rgba(255, 255, 255, 0.82);
+            --panel-strong: rgba(255, 255, 255, 0.95);
+            --panel-soft: rgba(255, 255, 255, 0.62);
+            --line: rgba(32, 44, 62, 0.11);
+            --line-soft: rgba(32, 44, 62, 0.07);
+            --text: #1f2735;
+            --text-muted: #6b7380;
+            --accent: #0a84ff;
+            --accent-pressed: #0067cf;
+            --success: #198754;
+            --warning: #c17b18;
+            --danger: #d44c44;
+            --shadow-lg: 0 18px 42px rgba(24, 38, 62, 0.14);
+            --shadow-md: 0 10px 24px rgba(24, 38, 62, 0.11);
+            --radius-xl: 16px;
+            --radius-lg: 12px;
+            --radius-md: 10px;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "PingFang SC", "Helvetica Neue", sans-serif;
+            color: var(--text);
+            background:
+                radial-gradient(1200px 500px at 8% -20%, #fef4e4 0%, transparent 56%),
+                radial-gradient(900px 460px at 100% 0%, #d6e9ff 0%, transparent 60%),
+                linear-gradient(145deg, var(--bg-gradient-a), var(--bg-gradient-b));
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            user-select: none;
+        }
+
+        input,
+        textarea,
+        select,
+        button {
+            font: inherit;
+        }
+
+        .font-mono {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+        }
+
+        .app-shell {
+            padding: 12px;
+            gap: 12px;
+        }
+
+        .glass {
+            background: var(--panel);
+            border: 1px solid var(--line-soft);
+            border-radius: var(--radius-xl);
+            backdrop-filter: blur(18px) saturate(140%);
+            -webkit-backdrop-filter: blur(18px) saturate(140%);
+            box-shadow: var(--shadow-md);
+        }
+
+        .toolbar {
+            height: 58px;
+            padding: 0 14px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 10px;
+            background: var(--panel-soft);
+            border-radius: var(--radius-xl);
+            border: 1px solid var(--line-soft);
+            backdrop-filter: blur(16px) saturate(150%);
+            -webkit-backdrop-filter: blur(16px) saturate(150%);
+            box-shadow: 0 4px 14px rgba(32, 44, 62, 0.08);
+        }
+
+        .toolbar-left {
+            display: flex;
+            align-items: center;
+            min-width: 220px;
+            max-width: 320px;
+            gap: 9px;
+            flex: 0 1 auto;
+        }
+
+        .traffic-placeholder {
+            width: 72px;
+            height: 1px;
+            flex-shrink: 0;
+        }
+
+        .toolbar-app {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 0;
+            transform: translateY(-1px);
+        }
+
+        .toolbar-middle {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            justify-content: center;
+            flex: 1 1 auto;
+            min-width: 0;
+        }
+
+        .toolbar-segment {
+            display: inline-flex;
+            align-items: center;
+            gap: 0;
+            overflow: hidden;
+            border-radius: 12px;
+            border: 1px solid var(--line-soft);
+            background: rgba(255, 255, 255, 0.52);
+        }
+
+        .toolbar-segment-btn {
+            border: 0;
+            border-radius: 0;
+            background: transparent;
+            color: var(--text-muted);
+            height: 30px;
+            padding: 0 12px;
+        }
+
+        .toolbar-segment-btn + .toolbar-segment-btn {
+            border-left: 1px solid var(--line-soft);
+        }
+
+        .toolbar-segment-btn:hover:not(:disabled) {
+            color: var(--text);
+            background: rgba(255, 255, 255, 0.74);
+            transform: none;
+        }
+
+        .toolbar-segment-btn.accent {
+            color: color-mix(in srgb, var(--accent) 82%, #2f3f59 18%);
+            background: rgba(10, 132, 255, 0.08);
+        }
+
+        .toolbar-segment-btn.accent:hover:not(:disabled) {
+            background: rgba(10, 132, 255, 0.14);
+        }
+
+        .toolbar-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            justify-content: flex-end;
+            flex: 0 0 auto;
+            min-width: 0;
+        }
+
+        .toolbar-title-text {
+            font-size: 13px;
+            font-weight: 670;
+            line-height: 1.12;
+        }
+
+        .toolbar-subtitle-text {
+            font-size: 11px;
+            color: var(--text-muted);
+            line-height: 1.1;
+            margin-top: 2px;
+        }
+
+        .toolbar-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            height: 25px;
+            border-radius: 999px;
+            padding: 0 9px;
+            font-size: 11px;
+            font-weight: 600;
+            border: 1px solid var(--line-soft);
+            background: rgba(255, 255, 255, 0.6);
+            white-space: nowrap;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 999px;
+            flex-shrink: 0;
+        }
+
+        .dot-online {
+            background: var(--success);
+            box-shadow: 0 0 0 5px rgba(25, 135, 84, 0.17);
+        }
+
+        .dot-retry {
+            background: var(--warning);
+            box-shadow: 0 0 0 5px rgba(193, 123, 24, 0.15);
+        }
+
+        .mac-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            border-radius: 10px;
+            border: 1px solid transparent;
+            height: 32px;
+            padding: 0 12px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all .15s ease;
+            line-height: 1;
+            white-space: nowrap;
+        }
+
+        .mac-btn:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+        }
+
+        .mac-btn-ghost {
+            background: rgba(255, 255, 255, 0.55);
+            border-color: var(--line-soft);
+            color: var(--text-muted);
+        }
+
+        .mac-btn-ghost:hover:not(:disabled) {
+            color: var(--text);
+            background: rgba(255, 255, 255, 0.86);
+            border-color: var(--line);
+            transform: translateY(-0.5px);
+        }
+
+        .mac-btn-primary {
+            color: #fff;
+            background: linear-gradient(180deg, #2e97ff 0%, var(--accent) 100%);
+            border-color: rgba(8, 95, 195, 0.58);
+            box-shadow: 0 3px 7px rgba(10, 132, 255, 0.28);
+        }
+
+        .mac-btn-primary:hover:not(:disabled) {
+            background: linear-gradient(180deg, #2491ff 0%, var(--accent-pressed) 100%);
+            transform: translateY(-0.5px);
+        }
+
+        .mac-btn-primary-soft {
+            color: var(--accent);
+            background: rgba(10, 132, 255, 0.09);
+            border-color: rgba(10, 132, 255, 0.24);
+        }
+
+        .mac-btn-primary-soft:hover:not(:disabled) {
+            background: rgba(10, 132, 255, 0.15);
+            border-color: rgba(10, 132, 255, 0.34);
+            transform: translateY(-0.5px);
+        }
+
+        .mac-btn-danger {
+            background: rgba(212, 76, 68, 0.11);
+            border-color: rgba(212, 76, 68, 0.2);
+            color: var(--danger);
+        }
+
+        .mac-btn-icon {
+            width: 32px;
+            padding: 0;
+            gap: 0;
+        }
+
+        .main-layout {
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            gap: 12px;
+        }
+
+        .queue-panel {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            background: var(--panel);
+            border: 1px solid var(--line-soft);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-md);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+        }
+
+        .queue-head {
+            padding: 10px 14px;
+            border-bottom: 1px solid var(--line-soft);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.45);
+        }
+
+        .queue-head-meta {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-muted);
+            font-size: 11px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .queue-counts {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            flex-wrap: wrap;
+        }
+
+        .pill {
+            border-radius: 999px;
+            border: 1px solid var(--line-soft);
+            background: rgba(255, 255, 255, 0.68);
+            color: var(--text-muted);
+            font-size: 11px;
+            font-weight: 600;
+            padding: 4px 9px;
+            letter-spacing: .01em;
+        }
+
+        .pill-btn {
+            cursor: pointer;
+            transition: all .15s ease;
+        }
+
+        .pill-btn:hover {
+            color: var(--text);
+            border-color: var(--line);
+            background: rgba(255, 255, 255, 0.9);
+        }
+
+        .pill-btn.active {
+            color: var(--accent);
+            border-color: rgba(10, 132, 255, 0.28);
+            background: rgba(10, 132, 255, 0.1);
+            box-shadow: 0 2px 6px rgba(10, 132, 255, 0.16);
+        }
+
+        .pill-clear {
+            border: 0;
+            background: transparent;
+            color: var(--text-muted);
+            font-size: 11px;
+            font-weight: 600;
+            padding: 4px 2px;
+            cursor: pointer;
+        }
+
+        .pill-clear:hover {
+            color: var(--accent);
+        }
+
+        .queue-body {
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
+            padding: 12px 12px 14px;
+            position: relative;
+        }
+
+        .queue-transport-hint {
+            margin: 0 16px 10px;
+            border-radius: 10px;
+            border: 1px solid rgba(193, 123, 24, 0.22);
+            background: rgba(193, 123, 24, 0.09);
+            color: #8a5b14;
+            padding: 7px 10px;
+            font-size: 12px;
+        }
+
+        .queue-alert {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            border-radius: 11px;
+            border: 1px solid rgba(212, 76, 68, 0.2);
+            background: linear-gradient(90deg, rgba(212, 76, 68, 0.08), rgba(212, 76, 68, 0.03));
+            color: #9e3a34;
+            padding: 8px 10px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all .14s ease;
+        }
+
+        .queue-alert:hover {
+            border-color: rgba(212, 76, 68, 0.34);
+            background: linear-gradient(90deg, rgba(212, 76, 68, 0.12), rgba(212, 76, 68, 0.05));
+        }
+
+        .task-item {
+            border-radius: 15px;
+            border: 1px solid rgba(43, 58, 79, 0.1);
+            background: var(--panel-strong);
+            margin-bottom: 10px;
+            padding: 12px;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all .17s ease;
+        }
+
+        .task-item:hover {
+            border-color: var(--line);
+            transform: translateY(-1px);
+            box-shadow: 0 12px 24px rgba(23, 34, 54, 0.11);
+        }
+
+        .task-item.active {
+            border-color: color-mix(in srgb, var(--accent) 58%, transparent 42%);
+            box-shadow: 0 12px 25px rgba(10, 132, 255, 0.18);
+        }
+
+        .task-bg-glow {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            opacity: 0.08;
+            background: radial-gradient(120% 100% at 0% 0%, rgba(10, 132, 255, 0.35), transparent 65%);
+        }
+
+        .task-bg-glow.tone-ok {
+            background: radial-gradient(120% 100% at 0% 0%, rgba(25, 135, 84, 0.35), transparent 65%);
+        }
+
+        .task-bg-glow.tone-warn {
+            background: radial-gradient(120% 100% at 0% 0%, rgba(193, 123, 24, 0.35), transparent 65%);
+        }
+
+        .task-bg-glow.tone-error {
+            background: radial-gradient(120% 100% at 0% 0%, rgba(212, 76, 68, 0.34), transparent 68%);
+        }
+
+        .task-layout {
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+            position: relative;
+            z-index: 2;
+        }
+
+        .task-visual {
+            width: 70px;
+            height: 48px;
+            border-radius: 11px;
+            border: 1px solid rgba(43, 58, 79, 0.14);
+            background: linear-gradient(145deg, rgba(229, 236, 246, 0.95), rgba(241, 245, 252, 0.95));
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            overflow: hidden;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .task-visual img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .task-visual-overlay {
+            position: absolute;
+            left: 5px;
+            bottom: 5px;
+            border-radius: 999px;
+            padding: 1px 6px;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: .02em;
+            color: #fff;
+            background: rgba(14, 28, 50, 0.72);
+            backdrop-filter: blur(3px);
+            -webkit-backdrop-filter: blur(3px);
+        }
+
+        .task-main {
+            min-width: 0;
+            flex: 1;
+        }
+
+        .task-head {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        .task-title {
+            font-size: 14px;
+            font-weight: 630;
+            line-height: 1.25;
+            color: var(--text);
+        }
+
+        .task-subtitle {
+            margin-top: 1px;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .task-meta-row {
+            margin-top: 7px;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+
+        .task-mini-pill {
+            border-radius: 999px;
+            border: 1px solid rgba(43, 58, 79, 0.1);
+            background: rgba(255, 255, 255, 0.82);
+            color: var(--text-muted);
+            font-size: 10px;
+            font-weight: 650;
+            letter-spacing: .02em;
+            padding: 2px 7px;
+        }
+
+        .task-progress-track {
+            margin-top: 8px;
+            height: 6px;
+            border-radius: 999px;
+            background: rgba(43, 62, 89, 0.11);
+            overflow: hidden;
+            border: 1px solid rgba(43, 62, 89, 0.06);
+        }
+
+        .task-progress-fill {
+            height: 100%;
+            border-radius: 999px;
+            position: relative;
+            background: var(--progress-color, var(--accent));
+            transition: width .22s ease;
+            overflow: hidden;
+        }
+
+        .task-progress-fill.progress-running::after,
+        .task-progress-fill.progress-indeterminate::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+        }
+
+        .task-progress-fill.progress-running::after {
+            background: linear-gradient(110deg, transparent 0%, rgba(255, 255, 255, 0.24) 38%, rgba(255, 255, 255, 0.62) 50%, rgba(255, 255, 255, 0.2) 62%, transparent 100%);
+            background-size: 240% 100%;
+            animation: progress-sheen 1.4s linear infinite;
+        }
+
+        .task-progress-fill.progress-indeterminate::after {
+            background-image: repeating-linear-gradient(-45deg, rgba(255, 255, 255, 0.18) 0 7px, rgba(255, 255, 255, 0.45) 7px 14px);
+            background-size: 30px 100%;
+            animation: progress-stripes .85s linear infinite;
+        }
+
+        .task-footnote {
+            margin-top: 6px;
+            font-size: 11px;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            min-height: 16px;
+        }
+
+        .task-step-wrap {
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .task-step-track {
+            min-width: 0;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .task-step-node {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            min-width: 0;
+            white-space: nowrap;
+        }
+
+        .task-step-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 999px;
+            background: rgba(75, 88, 108, 0.22);
+            border: 1px solid rgba(75, 88, 108, 0.2);
+            flex-shrink: 0;
+            transition: all .18s ease;
+        }
+
+        .task-step-label {
+            font-size: 10px;
+            font-weight: 620;
+            color: color-mix(in srgb, var(--text-muted) 90%, #5b6270 10%);
+            letter-spacing: .01em;
+            text-transform: uppercase;
+        }
+
+        .task-step-node.step-done .task-step-dot {
+            background: var(--success);
+            border-color: color-mix(in srgb, var(--success) 72%, #ffffff 28%);
+            box-shadow: 0 0 0 3px rgba(25, 135, 84, 0.16);
+        }
+
+        .task-step-node.step-done .task-step-label {
+            color: color-mix(in srgb, var(--success) 72%, #516171 28%);
+        }
+
+        .task-step-node.step-active .task-step-dot {
+            background: var(--accent);
+            border-color: color-mix(in srgb, var(--accent) 70%, #ffffff 30%);
+            box-shadow: 0 0 0 4px rgba(10, 132, 255, 0.16);
+        }
+
+        .task-step-node.step-active .task-step-label {
+            color: color-mix(in srgb, var(--accent) 78%, #4f5f74 22%);
+        }
+
+        .task-step-node.step-paused .task-step-dot {
+            background: var(--warning);
+            border-color: color-mix(in srgb, var(--warning) 68%, #ffffff 32%);
+            box-shadow: 0 0 0 4px rgba(193, 123, 24, 0.15);
+        }
+
+        .task-step-node.step-paused .task-step-label {
+            color: color-mix(in srgb, var(--warning) 70%, #4f5f74 30%);
+        }
+
+        .task-step-node.step-error .task-step-dot {
+            background: var(--danger);
+            border-color: color-mix(in srgb, var(--danger) 66%, #ffffff 34%);
+            box-shadow: 0 0 0 4px rgba(212, 76, 68, 0.14);
+        }
+
+        .task-step-node.step-error .task-step-label {
+            color: color-mix(in srgb, var(--danger) 72%, #4f5f74 28%);
+        }
+
+        .task-step-node.step-skipped .task-step-dot {
+            background: rgba(121, 134, 152, 0.2);
+            border-color: rgba(121, 134, 152, 0.24);
+        }
+
+        .task-step-link {
+            flex: 1;
+            min-width: 12px;
+            height: 2px;
+            border-radius: 999px;
+            background: rgba(80, 97, 121, 0.18);
+            transition: all .18s ease;
+        }
+
+        .task-step-link.link-done {
+            background: color-mix(in srgb, var(--success) 56%, #c9d2df 44%);
+        }
+
+        .task-step-link.link-active {
+            background: color-mix(in srgb, var(--accent) 58%, #c5d0e0 42%);
+        }
+
+        .task-step-link.link-error {
+            background: color-mix(in srgb, var(--danger) 58%, #d6c7cb 42%);
+        }
+
+        .task-step-current {
+            font-size: 10px;
+            font-weight: 620;
+            letter-spacing: .01em;
+            color: var(--text-muted);
+            white-space: nowrap;
+            max-width: 128px;
+            text-align: right;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .task-step-side {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 1px;
+            min-width: 148px;
+        }
+
+        .task-step-count,
+        .task-step-time {
+            font-size: 10px;
+            font-weight: 560;
+            color: color-mix(in srgb, var(--text-muted) 88%, #5d6676 12%);
+            white-space: nowrap;
+            max-width: 148px;
+            text-align: right;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            letter-spacing: .005em;
+        }
+
+        .task-inline-error {
+            margin-top: 7px;
+            border-radius: 9px;
+            border: 1px solid rgba(212, 76, 68, 0.2);
+            background: rgba(212, 76, 68, 0.08);
+            color: #9e3a34;
+            padding: 5px 7px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            line-height: 1.3;
+        }
+
+        .task-inline-note {
+            margin-top: 6px;
+            color: var(--text-muted);
+            font-size: 11px;
+            line-height: 1.3;
+        }
+
+        .task-actions {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            opacity: 0;
+            transform: translateX(4px);
+            transition: all .14s ease;
+        }
+
+        .task-item:hover .task-actions,
+        .task-item.active .task-actions {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .status-chip {
+            border-radius: 999px;
+            padding: 3px 8px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .035em;
+            border: 1px solid transparent;
+        }
+
+        .status-muted {
+            color: var(--text-muted);
+            border-color: var(--line-soft);
+            background: rgba(255, 255, 255, 0.65);
+        }
+
+        .status-accent {
+            color: var(--accent);
+            border-color: rgba(10, 132, 255, 0.28);
+            background: rgba(10, 132, 255, 0.08);
+        }
+
+        .status-ok {
+            color: var(--success);
+            border-color: rgba(25, 135, 84, 0.28);
+            background: rgba(25, 135, 84, 0.09);
+        }
+
+        .status-warn {
+            color: var(--warning);
+            border-color: rgba(193, 123, 24, 0.24);
+            background: rgba(193, 123, 24, 0.1);
+        }
+
+        .status-error {
+            color: var(--danger);
+            border-color: rgba(212, 76, 68, 0.24);
+            background: rgba(212, 76, 68, 0.11);
+        }
+
+        .line-clamp-1 {
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 1;
+            -webkit-box-orient: vertical;
+        }
+
+        .icon-btn {
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            border: 1px solid transparent;
+            background: transparent;
+            color: var(--text-muted);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all .13s ease;
+        }
+
+        .icon-btn:hover {
+            color: var(--text);
+            border-color: var(--line);
+            background: rgba(255, 255, 255, 0.8);
+        }
+
+        @keyframes progress-sheen {
+            0% {
+                background-position: 180% 0;
+            }
+            100% {
+                background-position: -70% 0;
+            }
+        }
+
+        @keyframes progress-stripes {
+            0% {
+                transform: translateX(0);
+            }
+            100% {
+                transform: translateX(24px);
+            }
+        }
+
+        .drawer {
+            width: 338px;
+            min-width: 338px;
+            max-width: 338px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            background: var(--panel);
+            border: 1px solid var(--line-soft);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-md);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+        }
+
+        .drawer-head {
+            padding: 14px;
+            border-bottom: 1px solid var(--line-soft);
+            background: rgba(255, 255, 255, 0.45);
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        .drawer-body {
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .detail-card {
+            background: rgba(255, 255, 255, 0.72);
+            border: 1px solid var(--line-soft);
+            border-radius: 12px;
+            padding: 11px;
+        }
+
+        .sheet-mask {
+            position: fixed;
+            inset: 0;
+            background: rgba(8, 16, 28, 0.24);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding: 72px 16px 16px;
+            z-index: 45;
+        }
+
+        .sheet {
+            width: min(620px, 96vw);
+            background: rgba(250, 252, 255, 0.96);
+            border: 1px solid var(--line-soft);
+            border-radius: 14px;
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            max-height: calc(100vh - 96px);
+        }
+
+        .sheet-header {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--line-soft);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        .sheet-body {
+            padding: 14px 16px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .sheet-footer {
+            padding: 12px 16px;
+            border-top: 1px solid var(--line-soft);
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.75);
+        }
+
+        .input,
+        .select,
+        .textarea {
+            width: 100%;
+            border-radius: 10px;
+            border: 1px solid var(--line);
+            background: rgba(255, 255, 255, 0.84);
+            color: var(--text);
+            font-size: 13px;
+            padding: 8px 10px;
+            outline: none;
+            transition: box-shadow .14s ease, border-color .14s ease, background .14s ease;
+            user-select: text;
+        }
+
+        .textarea {
+            resize: vertical;
+            min-height: 78px;
+            max-height: 180px;
+        }
+
+        .input:focus,
+        .select:focus,
+        .textarea:focus {
+            border-color: rgba(10, 132, 255, 0.52);
+            box-shadow: 0 0 0 4px rgba(10, 132, 255, 0.14);
+            background: #fff;
+        }
+
+        .segment {
+            display: inline-flex;
+            border-radius: 10px;
+            border: 1px solid var(--line-soft);
+            background: rgba(255, 255, 255, 0.72);
+            padding: 2px;
+            gap: 2px;
+            width: fit-content;
+        }
+
+        .segment-btn {
+            border: 0;
+            border-radius: 8px;
+            padding: 6px 12px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-muted);
+            background: transparent;
+            cursor: pointer;
+            transition: all .15s ease;
+        }
+
+        .segment-btn.active {
+            background: #fff;
+            color: var(--accent);
+            box-shadow: 0 1px 4px rgba(11, 24, 44, 0.12);
+        }
+
+        .toggle {
+            position: relative;
+            width: 36px;
+            height: 22px;
+            display: inline-flex;
+            flex-shrink: 0;
+        }
+
+        .toggle input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+            position: absolute;
+        }
+
+        .toggle-ui {
+            width: 100%;
+            height: 100%;
+            border-radius: 999px;
+            background: rgba(91, 105, 126, 0.35);
+            border: 1px solid rgba(40, 55, 78, 0.14);
+            transition: all .16s ease;
+            position: relative;
+        }
+
+        .toggle-ui::after {
+            content: "";
+            position: absolute;
+            left: 2px;
+            top: 2px;
+            width: 16px;
+            height: 16px;
+            border-radius: 999px;
+            background: #fff;
+            box-shadow: 0 1px 4px rgba(14, 21, 32, 0.25);
+            transition: transform .16s ease;
+        }
+
+        .toggle input:checked + .toggle-ui {
+            background: rgba(10, 132, 255, 0.82);
+            border-color: rgba(10, 132, 255, 0.75);
+        }
+
+        .toggle input:checked + .toggle-ui::after {
+            transform: translateX(14px);
+        }
+
+        .toast-wrap {
+            position: fixed;
+            top: 70px;
+            right: 16px;
+            z-index: 80;
+            width: min(360px, 92vw);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .toast-card {
+            border-radius: 11px;
+            border: 1px solid var(--line-soft);
+            background: rgba(253, 254, 255, 0.96);
+            box-shadow: 0 8px 20px rgba(19, 29, 45, 0.14);
+            padding: 10px 12px;
+            display: flex;
+            align-items: flex-start;
+            gap: 9px;
+        }
+
+        .toast-card.type-ok {
+            border-color: rgba(25, 135, 84, 0.26);
+        }
+
+        .toast-card.type-warn {
+            border-color: rgba(193, 123, 24, 0.26);
+        }
+
+        .toast-card.type-error {
+            border-color: rgba(212, 76, 68, 0.34);
+            background: linear-gradient(180deg, rgba(255, 252, 252, 0.98), rgba(255, 247, 247, 0.97));
+        }
+
+        .toast-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 7px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            border: 1px solid transparent;
+            background: rgba(255, 255, 255, 0.84);
+            color: var(--text-muted);
+        }
+
+        .toast-icon.type-ok {
+            color: var(--success);
+            border-color: rgba(25, 135, 84, 0.22);
+            background: rgba(25, 135, 84, 0.08);
+        }
+
+        .toast-icon.type-warn {
+            color: var(--warning);
+            border-color: rgba(193, 123, 24, 0.22);
+            background: rgba(193, 123, 24, 0.09);
+        }
+
+        .toast-icon.type-error {
+            color: var(--danger);
+            border-color: rgba(212, 76, 68, 0.25);
+            background: rgba(212, 76, 68, 0.1);
+        }
+
+        .text-danger {
+            color: var(--danger);
+        }
+
+        .text-warning {
+            color: var(--warning);
+        }
+
+        .text-success {
+            color: var(--success);
+        }
+
+        .fade-enter-active,
+        .fade-leave-active {
+            transition: opacity .2s ease;
+        }
+
+        .fade-enter-from,
+        .fade-leave-to {
+            opacity: 0;
+        }
+
+        .drawer-enter-active,
+        .drawer-leave-active {
+            transition: all .2s ease;
+        }
+
+        .drawer-enter-from,
+        .drawer-leave-to {
+            opacity: 0;
+            transform: translateX(22px);
+        }
+
+        .toast-enter-active,
+        .toast-leave-active {
+            transition: all .2s ease;
+        }
+
+        .toast-enter-from,
+        .toast-leave-to {
+            opacity: 0;
+            transform: translateX(12px);
+        }
+
+        .empty-state {
+            height: 100%;
+            min-height: 360px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            color: var(--text-muted);
+            opacity: .96;
+            text-align: center;
+            padding: 16px;
+        }
+
+        .empty-orb {
+            width: 68px;
+            height: 68px;
+            border-radius: 22px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(10, 132, 255, 0.18);
+            background:
+                radial-gradient(circle at 30% 20%, rgba(255, 255, 255, 0.94), rgba(218, 233, 251, 0.72) 54%, rgba(203, 225, 250, 0.62) 100%);
+            box-shadow:
+                inset 0 1px 0 rgba(255, 255, 255, 0.84),
+                0 8px 22px rgba(28, 56, 101, 0.16);
+            color: var(--accent);
+        }
+
+        .empty-dropzone {
+            margin-top: 2px;
+            border-radius: 13px;
+            border: 1px dashed rgba(10, 132, 255, 0.3);
+            background: linear-gradient(180deg, rgba(10, 132, 255, 0.06), rgba(10, 132, 255, 0.02));
+            padding: 14px;
+            width: min(520px, 92%);
+        }
+
+        .empty-action-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .statusbar {
+            height: 24px;
+            margin-top: 8px;
+            border-radius: 10px;
+            border: 1px solid var(--line-soft);
+            background: rgba(255, 255, 255, 0.58);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 0 10px;
+            font-size: 11px;
+            color: #596577;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+
+        .statusbar-left {
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .statusbar-right {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        .statusbar-progress-track {
+            width: 108px;
+            height: 4px;
+            border-radius: 999px;
+            background: rgba(43, 62, 89, 0.16);
+            overflow: hidden;
+        }
+
+        .statusbar-progress-fill {
+            height: 100%;
+            border-radius: 999px;
+            background: linear-gradient(90deg, #63b3ff, #0a84ff);
+            transition: width .2s ease;
+        }
+
+        .drop-active-surface {
+            border-color: rgba(10, 132, 255, 0.36);
+            background: linear-gradient(180deg, rgba(10, 132, 255, 0.08), rgba(10, 132, 255, 0.03));
+            box-shadow: inset 0 0 0 1px rgba(10, 132, 255, 0.12);
+        }
+
+        .drop-overlay {
+            position: absolute;
+            inset: 12px;
+            border-radius: 16px;
+            border: 1px dashed rgba(10, 132, 255, 0.44);
+            background: linear-gradient(180deg, rgba(10, 132, 255, 0.14), rgba(10, 132, 255, 0.07));
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            pointer-events: none;
+            z-index: 8;
+            color: var(--accent);
+            font-size: 13px;
+            font-weight: 650;
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+        }
+
+        .filter-empty {
+            min-height: 230px;
+            border-radius: 14px;
+            border: 1px dashed rgba(43, 58, 79, 0.2);
+            background: rgba(255, 255, 255, 0.55);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: var(--text-muted);
+            gap: 8px;
+            padding: 18px;
+        }
+
+        .warn-block {
+            border-radius: 10px;
+            border: 1px solid rgba(212, 76, 68, 0.2);
+            background: rgba(212, 76, 68, 0.08);
+            color: #a0352f;
+            padding: 9px 10px;
+            font-size: 12px;
+            line-height: 1.4;
+        }
+
+        .mobile-inspector {
+            position: fixed;
+            inset: 0;
+            z-index: 35;
+            background: rgba(8, 16, 28, 0.32);
+            display: flex;
+            align-items: flex-end;
+        }
+
+        .mobile-inspector-card {
+            width: 100%;
+            max-height: 84vh;
+            border-radius: 16px 16px 0 0;
+            background: rgba(250, 252, 255, 0.98);
+            border: 1px solid var(--line-soft);
+            box-shadow: 0 -12px 24px rgba(19, 29, 45, 0.16);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Claude Code-inspired console theme: text-first, warm neutral, low chrome. */
+        :root {
+            --bg-app: #f6f3ec;
+            --bg-gradient-a: #f7f4ee;
+            --bg-gradient-b: #eee8dd;
+            --panel: #fbfaf7;
+            --panel-strong: #fffdf9;
+            --panel-soft: #f1ece3;
+            --line: rgba(57, 47, 34, 0.16);
+            --line-soft: rgba(57, 47, 34, 0.10);
+            --text: #2f2a23;
+            --text-muted: #82776a;
+            --accent: #b86b2b;
+            --accent-pressed: #93501d;
+            --success: #4f7f45;
+            --warning: #a36d24;
+            --danger: #b4493e;
+            --shadow-lg: 0 20px 48px rgba(48, 38, 26, 0.16);
+            --shadow-md: 0 8px 20px rgba(48, 38, 26, 0.08);
+            --radius-xl: 10px;
+            --radius-lg: 8px;
+            --radius-md: 7px;
+        }
+
+        body {
+            background:
+                linear-gradient(180deg, rgba(255, 253, 248, 0.86), rgba(238, 232, 221, 0.92)),
+                repeating-linear-gradient(0deg, rgba(58, 46, 31, 0.035) 0 1px, transparent 1px 22px);
+        }
+
+        .app-shell {
+            padding: 10px;
+            gap: 10px;
+        }
+
+        .toolbar,
+        .queue-panel,
+        .drawer,
+        .statusbar,
+        .sheet,
+        .mobile-inspector-card {
+            background: var(--panel);
+            border-color: var(--line);
+            box-shadow: var(--shadow-md);
+            backdrop-filter: none;
+            -webkit-backdrop-filter: none;
+        }
+
+        .toolbar {
+            height: 54px;
+            border-radius: 8px;
+            padding: 0 12px;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55), var(--shadow-md);
+        }
+
+        .toolbar-left {
+            min-width: 250px;
+        }
+
+        .toolbar-app .w-8 {
+            border-radius: 7px !important;
+            background: #2f2a23 !important;
+            color: #f8f2e8 !important;
+            box-shadow: none !important;
+        }
+
+        .toolbar-title-text {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+            font-size: 13px;
+            font-weight: 760;
+            letter-spacing: 0;
+        }
+
+        .toolbar-subtitle-text {
+            color: #998d7e;
+            font-size: 11px;
+        }
+
+        .toolbar-segment,
+        .segment {
+            border-radius: 8px;
+            background: #eee8dd;
+            border-color: rgba(57, 47, 34, 0.12);
+            padding: 2px;
+        }
+
+        .toolbar-segment-btn,
+        .segment-btn {
+            border-radius: 6px;
+            color: #71685e;
+            font-weight: 650;
+        }
+
+        .toolbar-segment-btn.accent,
+        .segment-btn.active {
+            color: #2f2a23;
+            background: #fffaf2;
+            box-shadow: 0 1px 2px rgba(48, 38, 26, 0.12);
+        }
+
+        .toolbar-badge {
+            border-radius: 7px;
+            background: #f6f1e8;
+            border-color: rgba(57, 47, 34, 0.12);
+            color: #4a4037;
+            height: 28px;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+        }
+
+        .dot-online,
+        .dot-retry {
+            box-shadow: none;
+        }
+
+        .mac-btn {
+            border-radius: 7px;
+            height: 31px;
+            font-weight: 670;
+            box-shadow: none;
+        }
+
+        .mac-btn-ghost {
+            background: #f7f2e9;
+            border-color: rgba(57, 47, 34, 0.12);
+            color: #665d54;
+        }
+
+        .mac-btn-ghost:hover:not(:disabled),
+        .icon-btn:hover {
+            background: #fffaf2;
+            border-color: rgba(57, 47, 34, 0.2);
+            color: #2f2a23;
+            transform: none;
+        }
+
+        .mac-btn-primary {
+            background: #2f2a23;
+            border-color: #2f2a23;
+            color: #fff8ed;
+            box-shadow: 0 2px 0 rgba(0, 0, 0, 0.14);
+        }
+
+        .mac-btn-primary:hover:not(:disabled) {
+            background: #46382d;
+            transform: none;
+        }
+
+        .mac-btn-primary-soft {
+            color: #93501d;
+            background: rgba(184, 107, 43, 0.10);
+            border-color: rgba(184, 107, 43, 0.22);
+        }
+
+        .queue-panel {
+            border-radius: 8px;
+        }
+
+        .queue-head,
+        .drawer-head,
+        .sheet-header,
+        .sheet-footer {
+            background: #f4efe6;
+            border-color: var(--line-soft);
+        }
+
+        .queue-body {
+            padding: 10px;
+            background:
+                linear-gradient(180deg, rgba(255, 252, 246, 0.72), rgba(250, 247, 241, 0.92)),
+                repeating-linear-gradient(0deg, transparent 0 31px, rgba(57, 47, 34, 0.035) 31px 32px);
+        }
+
+        .pill {
+            border-radius: 7px;
+            background: transparent;
+            border-color: transparent;
+            color: #82776a;
+            padding: 5px 8px;
+        }
+
+        .pill-btn:hover,
+        .pill-btn.active {
+            background: #fffaf2;
+            border-color: rgba(57, 47, 34, 0.14);
+            color: #2f2a23;
+            box-shadow: none;
+        }
+
+        .queue-alert,
+        .queue-transport-hint,
+        .warn-block {
+            border-radius: 8px;
+            background: #fff2ef;
+            border-color: rgba(180, 73, 62, 0.2);
+            color: #8c342d;
+        }
+
+        .task-item {
+            border-radius: 8px;
+            background: #fffdf9;
+            border-color: rgba(57, 47, 34, 0.12);
+            margin-bottom: 8px;
+            padding: 10px;
+            box-shadow: none;
+        }
+
+        .task-item:hover {
+            border-color: rgba(57, 47, 34, 0.22);
+            transform: none;
+            box-shadow: 0 8px 18px rgba(48, 38, 26, 0.07);
+        }
+
+        .task-item.active {
+            border-color: rgba(184, 107, 43, 0.45);
+            box-shadow: inset 3px 0 0 #b86b2b, 0 8px 18px rgba(48, 38, 26, 0.08);
+        }
+
+        .task-bg-glow {
+            display: none;
+        }
+
+        .task-layout {
+            gap: 10px;
+        }
+
+        .task-visual {
+            width: 58px;
+            height: 44px;
+            border-radius: 7px;
+            background: #f3ede4;
+            border-color: rgba(57, 47, 34, 0.14);
+            box-shadow: none;
+        }
+
+        .task-visual-overlay {
+            border-radius: 5px;
+            background: rgba(47, 42, 35, 0.82);
+            color: #fff8ed;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+        }
+
+        .task-title {
+            font-size: 13px;
+            font-weight: 720;
+            color: #2f2a23;
+        }
+
+        .task-subtitle,
+        .task-footnote,
+        .task-step-count,
+        .task-step-time,
+        .task-step-current {
+            color: #82776a;
+        }
+
+        .task-mini-pill,
+        .status-chip {
+            border-radius: 5px;
+            background: #f5efe6;
+            border-color: rgba(57, 47, 34, 0.11);
+            color: #766b60;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+            letter-spacing: 0;
+        }
+
+        .status-accent {
+            color: #93501d;
+            background: rgba(184, 107, 43, 0.10);
+            border-color: rgba(184, 107, 43, 0.24);
+        }
+
+        .status-ok {
+            color: #3f7138;
+            background: rgba(79, 127, 69, 0.10);
+            border-color: rgba(79, 127, 69, 0.22);
+        }
+
+        .status-warn {
+            color: #895917;
+            background: rgba(163, 109, 36, 0.12);
+            border-color: rgba(163, 109, 36, 0.22);
+        }
+
+        .status-error {
+            color: #9b3b32;
+            background: rgba(180, 73, 62, 0.10);
+            border-color: rgba(180, 73, 62, 0.22);
+        }
+
+        .task-progress-track,
+        .statusbar-progress-track {
+            height: 4px;
+            background: #e5ded3;
+            border: 0;
+        }
+
+        .task-progress-fill,
+        .statusbar-progress-fill {
+            background: #b86b2b;
+        }
+
+        .task-step-dot {
+            width: 7px;
+            height: 7px;
+            background: #d8d0c3;
+            border: 0;
+        }
+
+        .task-step-node.step-active .task-step-dot,
+        .task-step-node.step-done .task-step-dot,
+        .task-step-node.step-paused .task-step-dot,
+        .task-step-node.step-error .task-step-dot {
+            box-shadow: none;
+        }
+
+        .task-step-node.step-active .task-step-dot {
+            background: #b86b2b;
+        }
+
+        .task-step-node.step-done .task-step-dot {
+            background: #4f7f45;
+        }
+
+        .task-step-label {
+            color: #8d8276;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+            letter-spacing: 0;
+        }
+
+        .task-step-node.step-active .task-step-label {
+            color: #93501d;
+        }
+
+        .task-step-node.step-done .task-step-label {
+            color: #4f7f45;
+        }
+
+        .task-step-link {
+            background: #ddd5ca;
+        }
+
+        .task-step-link.link-active {
+            background: rgba(184, 107, 43, 0.45);
+        }
+
+        .task-step-link.link-done {
+            background: rgba(79, 127, 69, 0.42);
+        }
+
+        .task-inline-note,
+        .task-inline-error {
+            border-radius: 6px;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+        }
+
+        .drawer {
+            width: 360px;
+            min-width: 360px;
+            max-width: 360px;
+            border-radius: 8px;
+        }
+
+        .drawer-body,
+        .sheet-body {
+            background: #fbfaf7;
+        }
+
+        .detail-card {
+            border-radius: 8px;
+            background: #fffdf9;
+            border-color: rgba(57, 47, 34, 0.12);
+        }
+
+        .sheet-mask {
+            background: rgba(47, 42, 35, 0.30);
+            backdrop-filter: blur(2px);
+            -webkit-backdrop-filter: blur(2px);
+        }
+
+        .sheet {
+            border-radius: 8px;
+        }
+
+        .input,
+        .select,
+        .textarea {
+            border-radius: 7px;
+            background: #fffdf9;
+            border-color: rgba(57, 47, 34, 0.18);
+            color: #2f2a23;
+        }
+
+        .textarea {
+            min-height: 96px;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+        }
+
+        .input:focus,
+        .select:focus,
+        .textarea:focus {
+            border-color: rgba(184, 107, 43, 0.55);
+            box-shadow: 0 0 0 3px rgba(184, 107, 43, 0.14);
+            background: #fffefb;
+        }
+
+        .toggle-ui {
+            background: #d5ccbf;
+            border-color: rgba(57, 47, 34, 0.15);
+        }
+
+        .toggle input:checked + .toggle-ui {
+            background: #2f2a23;
+            border-color: #2f2a23;
+        }
+
+        .empty-orb {
+            border-radius: 8px;
+            background: #2f2a23;
+            color: #fff8ed;
+            border: 0;
+            box-shadow: none;
+        }
+
+        .empty-dropzone,
+        .filter-empty {
+            border-radius: 8px;
+            border-color: rgba(184, 107, 43, 0.28);
+            background: #fffaf2;
+        }
+
+        .statusbar {
+            border-radius: 7px;
+            background: #f4efe6;
+            color: #766b60;
+            margin-top: 0;
+        }
+
+        .toast-card {
+            border-radius: 8px;
+            background: #fffdf9;
+            box-shadow: 0 12px 28px rgba(48, 38, 26, 0.16);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(95, 78, 56, 0.34);
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(108, 122, 143, 0.45);
+            border-radius: 999px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(108, 122, 143, 0.64);
+        }
+
+        @media (max-width: 1100px) {
+            .drawer {
+                display: none;
+            }
+
+            .toolbar {
+                height: auto;
+                min-height: 58px;
+                flex-wrap: wrap;
+                padding: 10px 12px;
+            }
+
+            .toolbar-left {
+                min-width: 0;
+                max-width: none;
+                flex: 1 1 auto;
+            }
+
+            .traffic-placeholder {
+                width: 58px;
+            }
+
+            .toolbar-middle {
+                order: 3;
+                width: 100%;
+                justify-content: flex-start;
+                padding-top: 2px;
+                flex-wrap: wrap;
+            }
+
+            .toolbar-segment {
+                width: 100%;
+                justify-content: flex-start;
+                flex-wrap: wrap;
+            }
+
+            .toolbar-right {
+                flex: 0 0 auto;
+            }
+        }
+
+        @media (max-width: 780px) {
+            .app-shell {
+                padding: 8px;
+                gap: 8px;
+            }
+
+            .queue-head {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .traffic-placeholder {
+                width: 52px;
+            }
+
+            .toolbar-left {
+                width: 100%;
+            }
+
+            .toolbar-middle,
+            .toolbar-right {
+                width: 100%;
+                display: flex;
+                gap: 7px;
+                flex-wrap: wrap;
+            }
+
+            .toolbar-right .toolbar-badge {
+                width: 100%;
+                justify-content: center;
+                order: 3;
+            }
+
+            .toolbar-middle .mac-btn,
+            .toolbar-right .mac-btn {
+                width: auto;
+            }
+
+            .toolbar-middle .toolbar-segment {
+                display: grid;
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+                width: 100%;
+            }
+
+            .toolbar-middle .toolbar-segment .mac-btn {
+                width: 100%;
+            }
+
+            .toolbar-right .mac-btn-primary {
+                flex: 1 1 180px;
+                justify-content: center;
+            }
+
+            .task-layout {
+                gap: 9px;
+            }
+
+            .task-visual {
+                width: 58px;
+                height: 42px;
+            }
+
+            .task-actions {
+                opacity: 1;
+                transform: none;
+            }
+
+            .empty-dropzone {
+                width: 100%;
+            }
+
+            .statusbar {
+                height: auto;
+                min-height: 26px;
+                padding: 5px 8px;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 4px;
+            }
+
+            .statusbar-right {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .statusbar-progress-track {
+                flex: 1;
+            }
+        }
+    </style>
+</head>
+<body class="h-screen overflow-hidden">
+<div id="app" class="app-shell h-full flex flex-col">
+
+    <header class="toolbar">
+        <div class="toolbar-left">
+            <div class="traffic-placeholder"></div>
+            <div class="toolbar-app min-w-0">
+                <div class="w-8 h-8 rounded-xl flex items-center justify-center text-white shrink-0" style="background: linear-gradient(145deg, #37a3ff, #0a84ff); box-shadow: 0 6px 12px rgba(10, 132, 255, .35)">
+                    <i data-lucide="download" class="w-4 h-4"></i>
+                </div>
+                <div class="min-w-0">
+                    <div class="toolbar-title-text truncate">yt-downloader</div>
+                    <div class="toolbar-subtitle-text truncate">local media workflow</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="toolbar-middle">
+            <div class="toolbar-segment">
+                <button class="mac-btn toolbar-segment-btn accent" @click="resumeAll" :disabled="!hasResumableTasks">
+                    <i data-lucide="play" class="w-4 h-4"></i>
+                    全部继续
+                </button>
+                <button class="mac-btn toolbar-segment-btn" @click="pauseAll" :disabled="!hasPausableTasks">
+                    <i data-lucide="pause" class="w-4 h-4"></i>
+                    全部暂停
+                </button>
+                <button class="mac-btn toolbar-segment-btn" @click="clearCompleted">
+                    <i data-lucide="eraser" class="w-4 h-4"></i>
+                    清理完成
+                </button>
+            </div>
+        </div>
+
+        <div class="toolbar-right">
+            <div class="toolbar-badge">
+                <span class="dot" :class="wsConnected ? 'dot-online' : 'dot-retry'"></span>
+                <span>{{ wsConnected ? 'backend online' : 'reconnecting' }}</span>
+            </div>
+            <button class="mac-btn mac-btn-ghost mac-btn-icon" title="刷新任务" @click="refreshTasks">
+                <i data-lucide="refresh-cw" class="w-[18px] h-[18px]"></i>
+            </button>
+            <button class="mac-btn mac-btn-ghost mac-btn-icon" :title="inspectorOpen ? '收起任务详情' : '打开任务详情'" @click="toggleInspector" :disabled="!selectedTask">
+                <i data-lucide="panel-right" class="w-[18px] h-[18px]"></i>
+            </button>
+            <button class="mac-btn mac-btn-ghost mac-btn-icon" title="偏好设置" @click="showSettings = true">
+                <i data-lucide="settings-2" class="w-[18px] h-[18px]"></i>
+            </button>
+            <button class="mac-btn mac-btn-ghost" @click="openLocalSubtitleSheet">
+                <i data-lucide="captions" class="w-4 h-4"></i>
+                本地字幕
+            </button>
+            <button class="mac-btn mac-btn-primary" @click="openAddSheet()">
+                <i data-lucide="plus" class="w-4 h-4"></i>
+                新建
+            </button>
+        </div>
+    </header>
+
+    <main class="main-layout min-h-0">
+        <section class="queue-panel">
+            <div class="queue-head">
+                <div class="queue-counts">
+                    <button class="pill pill-btn" :class="{ active: activeFilter === 'all' }" @click="setFilter('all')">全部 {{ queueStats.total }}</button>
+                    <button class="pill pill-btn" :class="{ active: activeFilter === 'active' }" @click="setFilter('active')">进行中 {{ queueStats.active }}</button>
+                    <button class="pill pill-btn" :class="{ active: activeFilter === 'pending' }" @click="setFilter('pending')">待处理 {{ queueStats.pending }}</button>
+                    <button class="pill pill-btn" :class="{ active: activeFilter === 'error' }" @click="setFilter('error')">失败 {{ queueStats.failed }}</button>
+                    <button class="pill pill-btn" :class="{ active: activeFilter === 'completed' }" @click="setFilter('completed')">完成 {{ queueStats.completed }}</button>
+                    <button v-if="activeFilter !== 'all'" class="pill-clear" @click="setFilter('all')">清除筛选</button>
+                </div>
+
+                <div class="queue-head-meta">
+                    <span>显示 {{ filteredTasks.length }}/{{ queueStats.total }}</span>
+                    <span v-if="queueStats.active > 0" class="font-mono">{{ aggregateSpeedLabel }}</span>
+                </div>
+            </div>
+
+            <div v-if="!wsConnected" class="queue-transport-hint">
+                实时推送暂时不可用，当前已自动切换为轮询模式。
+            </div>
+
+            <div
+                class="queue-body"
+                :class="{ 'drop-active-surface': isDropActive }"
+                @dragenter.prevent="handleDragEnter"
+                @dragover.prevent="handleDragOver"
+                @dragleave.prevent="handleDragLeave"
+                @drop.prevent="handleDrop"
+            >
+                <div v-if="isDropActive" class="drop-overlay">松手即可导入链接</div>
+
+                <div
+                    v-if="latestErrorTask"
+                    class="queue-alert mb-3"
+                    @click="focusTask(latestErrorTask.task_id)"
+                >
+                    <i data-lucide="triangle-alert" class="w-4 h-4 shrink-0"></i>
+                    <div class="min-w-0 flex-1">
+                        <span class="font-semibold mr-1">最近失败：</span>
+                        <div class="line-clamp-1 inline-block align-middle max-w-[95%]">{{ latestErrorTask.title || latestErrorTask.url }}</div>
+                    </div>
+                    <button
+                        class="mac-btn mac-btn-ghost h-7 px-2 text-[11px]"
+                        style="color:#9e3a34;border-color:rgba(212,76,68,.28);background:rgba(255,255,255,.55)"
+                        @click.stop="copyText(latestErrorTask.error_message || '')"
+                    >
+                        复制错误
+                    </button>
+                    <button
+                        class="mac-btn mac-btn-ghost h-7 px-2 text-[11px]"
+                        style="color:#9e3a34;border-color:rgba(212,76,68,.28);background:rgba(255,255,255,.55)"
+                        @click.stop="setFilter('error')"
+                    >
+                        只看失败
+                    </button>
+                </div>
+
+                <div v-if="tasks.length === 0" class="empty-state">
+                    <div class="empty-orb">
+                        <i data-lucide="inbox" class="w-7 h-7"></i>
+                    </div>
+                    <div class="text-[15px] font-semibold text-[color:var(--text)]">ready</div>
+                    <div class="text-xs text-[color:var(--text-muted)]">下载、字幕生成、翻译和封装会在这里按步骤执行</div>
+
+                    <div class="empty-dropzone" :class="{ 'drop-active-surface': isDropActive }">
+                        <div class="text-[12px] font-semibold text-[color:var(--text)]">{{ isDropActive ? 'drop to import' : 'paste URLs to queue' }}</div>
+                        <div class="text-[11px] text-[color:var(--text-muted)] mt-1">支持多行 URL，也可以拖入链接或从本地目录生成字幕</div>
+                        <div class="empty-action-row mt-3">
+                            <button class="mac-btn mac-btn-primary" @click="openAddSheet()">
+                                <i data-lucide="plus" class="w-4 h-4"></i>
+                                新建任务
+                            </button>
+                            <button class="mac-btn mac-btn-ghost" @click="openLocalSubtitleSheet">
+                                <i data-lucide="captions" class="w-4 h-4"></i>
+                                本地视频字幕
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div v-else-if="filteredTasks.length === 0" class="filter-empty">
+                    <i data-lucide="list-filter" class="w-5 h-5"></i>
+                    <div class="text-[13px] font-semibold text-[color:var(--text)]">当前筛选下没有任务</div>
+                    <div class="text-[12px]">试试切换到其他筛选，或清除筛选查看全部队列。</div>
+                    <button class="mac-btn mac-btn-ghost mt-1" @click="setFilter('all')">显示全部任务</button>
+                </div>
+
+                <article
+                    v-for="task in filteredTasks"
+                    :key="task.task_id"
+                    class="task-item"
+                    :class="{ active: selectedTaskId === task.task_id }"
+                    @click="selectTask(task.task_id)"
+                >
+                    <div class="task-bg-glow" :class="taskToneClass(task.status)"></div>
+                    <div class="task-layout">
+                        <div class="task-visual">
+                            <img v-if="task.thumbnail" :src="task.thumbnail" alt="">
+                            <i v-else :data-lucide="task.type === 'audio' ? 'music-2' : 'clapperboard'" class="w-5 h-5"></i>
+                            <div v-if="task.status === 'downloading'" class="task-visual-overlay">{{ Math.round(task.progress || 0) }}%</div>
+                        </div>
+
+                        <div class="task-main">
+                            <div class="task-head">
+                                <div class="min-w-0 flex-1">
+                                    <div class="task-title line-clamp-1" :title="task.title || task.url">{{ task.title || '解析中...' }}</div>
+                                    <div class="task-subtitle line-clamp-1" :title="task.uploader || task.url">{{ task.uploader || task.url }}</div>
+                                </div>
+                                <span class="status-chip" :class="taskStatusClass(task.status)">{{ taskStatusLabel(task) }}</span>
+                            </div>
+
+                            <div class="task-meta-row font-mono">
+                                <span class="task-mini-pill">{{ (task.type || 'video').toUpperCase() }}</span>
+                                <span class="task-mini-pill">{{ (task.format || '-').toUpperCase() }}</span>
+                                <span class="task-mini-pill">{{ task.quality || '--' }}</span>
+                                <span class="task-mini-pill">{{ task.total_size || '--' }}</span>
+                            </div>
+
+                            <div class="task-progress-track">
+                                <div
+                                    class="task-progress-fill"
+                                    :class="taskProgressClass(task.status)"
+                                    :style="taskProgressStyle(task)"
+                                ></div>
+                            </div>
+
+                            <div class="task-step-wrap">
+                                <div class="task-step-track">
+                                    <template v-for="(step, idx) in taskStepModel(task).steps" :key="`step-${task.task_id}-${step.key}`">
+                                        <div class="task-step-node" :class="`step-${step.state}`">
+                                            <span class="task-step-dot"></span>
+                                            <span class="task-step-label">{{ step.label }}</span>
+                                        </div>
+                                        <div
+                                            v-if="idx < 4"
+                                            class="task-step-link"
+                                            :class="taskStepLinkClass(task, idx)"
+                                        ></div>
+                                    </template>
+                                </div>
+                                <div class="task-step-side">
+                                    <div class="task-step-current" :title="taskStepCurrentLabel(task)">
+                                        {{ taskStepCurrentLabel(task) }}
+                                    </div>
+                                    <div class="task-step-count" :title="taskStepCountLabel(task)">
+                                        {{ taskStepCountLabel(task) }}
+                                    </div>
+                                    <div class="task-step-time" :title="taskStepTimeLabel(task)">
+                                        {{ taskStepTimeLabel(task) }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="task-footnote font-mono">
+                                <span>{{ taskRuntimeHint(task) }}</span>
+                                <span v-if="taskSubtitleLayoutHint(task)">{{ taskSubtitleLayoutHint(task) }}</span>
+                                <span v-if="task.status === 'downloading'">{{ Math.round(task.progress || 0) }}%</span>
+                            </div>
+
+                            <div v-if="task.error_message" class="task-inline-error" :title="task.error_message">
+                                <i data-lucide="triangle-alert" class="w-3.5 h-3.5 shrink-0"></i>
+                                <span class="line-clamp-1 flex-1">{{ task.error_message }}</span>
+                                <button class="mac-btn mac-btn-ghost h-6 px-2 text-[10px]" @click.stop="focusTask(task.task_id)">
+                                    查看
+                                </button>
+                            </div>
+                            <div v-else-if="subtitleRetryTargets(task).length" class="task-inline-note line-clamp-1" :title="subtitleRetryPreview(task)">
+                                字幕缺失 {{ subtitleRetryTargets(task).length }} 项：{{ subtitleRetryPreview(task) }}
+                            </div>
+                            <div v-else-if="task.subtitle_note" class="task-inline-note line-clamp-1" :title="task.subtitle_note">
+                                字幕：{{ task.subtitle_note }}
+                            </div>
+                        </div>
+
+                        <div class="task-actions" @click.stop>
+                            <button
+                                v-if="task.status === 'downloading'"
+                                class="icon-btn"
+                                title="暂停"
+                                @click="pauseTask(task)"
+                            >
+                                <i data-lucide="pause" class="w-4 h-4"></i>
+                            </button>
+                            <button
+                                v-if="task.status === 'paused' || task.status === 'error' || task.status === 'processing'"
+                                class="icon-btn"
+                                title="继续"
+                                @click="resumeTask(task)"
+                            >
+                                <i data-lucide="play" class="w-4 h-4"></i>
+                            </button>
+                            <button
+                                v-if="task.status === 'review_pending'"
+                                class="mac-btn h-7 px-2 text-xs"
+                                style="background: rgba(193, 123, 24, .14); color: var(--warning); border-color: rgba(193,123,24,.2);"
+                                @click="continueBurnin(task.task_id)"
+                            >
+                                继续烧录
+                            </button>
+                            <button
+                                v-if="canCancelTask(task.status)"
+                                class="icon-btn"
+                                title="取消"
+                                @click="cancelTask(task.task_id)"
+                            >
+                                <i data-lucide="ban" class="w-4 h-4"></i>
+                            </button>
+                            <button
+                                class="icon-btn"
+                                title="移除"
+                                @click="removeTask(task.task_id)"
+                            >
+                                <i data-lucide="x" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </section>
+
+        <transition name="drawer">
+            <aside v-if="inspectorOpen && selectedTask" class="drawer">
+                <div class="drawer-head">
+                    <div class="min-w-0">
+                        <div class="text-sm font-semibold line-clamp-1" :title="selectedTask.title || selectedTask.url">{{ selectedTask.title || '未命名任务' }}</div>
+                        <div class="text-xs text-[color:var(--text-muted)] mt-1 line-clamp-1" :title="selectedTask.uploader || selectedTask.url">{{ selectedTask.uploader || selectedTask.url }}</div>
+                    </div>
+                    <button class="icon-btn" @click="inspectorOpen = false">
+                        <i data-lucide="x" class="w-4 h-4"></i>
+                    </button>
+                </div>
+
+                <div class="drawer-body">
+                    <div class="detail-card">
+                        <div class="text-xs text-[color:var(--text-muted)] uppercase tracking-wide">状态</div>
+                        <div class="mt-1">
+                            <span class="status-chip" :class="taskStatusClass(selectedTask.status)">{{ taskStatusLabel(selectedTask) }}</span>
+                        </div>
+                        <div class="mt-2 text-xs font-mono text-[color:var(--text-muted)]">
+                            {{ selectedTask.speed || '--' }} / ETA {{ selectedTask.eta || '--' }}
+                        </div>
+                        <button
+                            v-if="selectedTask.status === 'review_pending'"
+                            class="mac-btn mac-btn-ghost mt-3 w-full"
+                            style="color: var(--warning); border-color: rgba(193,123,24,.24); background: rgba(193,123,24,.10);"
+                            @click="continueBurnin(selectedTask.task_id)"
+                        >
+                            <i data-lucide="play-circle" class="w-4 h-4"></i>
+                            继续烧录字幕
+                        </button>
+                    </div>
+
+                    <div class="detail-card">
+                        <div class="text-xs text-[color:var(--text-muted)] uppercase tracking-wide">来源 URL</div>
+                        <div class="flex gap-2 mt-2">
+                            <input class="input text-xs" :value="selectedTask.url" readonly>
+                            <button class="mac-btn mac-btn-ghost px-2" @click="copyText(selectedTask.url)">
+                                <i data-lucide="copy" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="detail-card text-sm">
+                        <div class="flex justify-between gap-2"><span class="text-[color:var(--text-muted)]">格式</span><span class="font-mono">{{ selectedTask.format }} / {{ selectedTask.quality }}</span></div>
+                        <div class="flex justify-between gap-2 mt-2"><span class="text-[color:var(--text-muted)]">大小</span><span class="font-mono">{{ selectedTask.total_size || '--' }}</span></div>
+                        <div v-if="selectedTask.subtitles_translate" class="flex justify-between gap-2 mt-2"><span class="text-[color:var(--text-muted)]">翻译策略</span><span class="font-mono text-right">{{ selectedTask.subtitles_codex_strict ? '严格 Codex' : 'Codex 优先 / 失败回退' }}</span></div>
+                        <div v-if="taskSubtitleLayoutHint(selectedTask)" class="flex justify-between gap-2 mt-2"><span class="text-[color:var(--text-muted)]">字幕布局</span><span class="font-mono text-right">{{ taskSubtitleLayoutHint(selectedTask) }}</span></div>
+                        <div class="flex justify-between gap-2 mt-2"><span class="text-[color:var(--text-muted)]">保存路径</span><span class="font-mono text-right break-all">{{ selectedTask.save_path || '--' }}</span></div>
+                    </div>
+
+                    <div v-if="Array.isArray(selectedTask.output_files) && selectedTask.output_files.length" class="detail-card text-xs">
+                        <div class="flex items-center justify-between gap-2">
+                            <div class="font-semibold">输出文件</div>
+                            <div class="font-mono text-[color:var(--text-muted)]">{{ selectedTask.output_files.length }} 个</div>
+                        </div>
+                        <div class="mt-2 flex flex-col gap-1.5">
+                            <div
+                                v-for="path in selectedTask.output_files.slice(0, 10)"
+                                :key="`out-${selectedTask.task_id}-${path}`"
+                                class="flex items-center gap-2"
+                            >
+                                <i data-lucide="file" class="w-3.5 h-3.5 text-[color:var(--text-muted)]"></i>
+                                <div class="font-mono flex-1 line-clamp-1" :title="path">{{ outputFileName(path) }}</div>
+                                <button class="mac-btn mac-btn-ghost h-6 px-2 text-[10px]" @click="copyText(path)">复制路径</button>
+                            </div>
+                            <div v-if="selectedTask.output_files.length > 10" class="text-[11px] text-[color:var(--text-muted)]">
+                                还有 {{ selectedTask.output_files.length - 10 }} 个文件未展开
+                            </div>
+                        </div>
+                    </div>
+
+                    <div v-if="selectedTask.type === 'video'" class="detail-card text-xs" style="border-color: rgba(10,132,255,.18); background: rgba(10,132,255,.045)">
+                        <div class="flex items-center justify-between gap-2">
+                            <div>
+                                <div class="font-semibold" style="color: var(--accent)">字幕布局预览</div>
+                                <div class="text-[color:var(--text-muted)] mt-1">预计使用：{{ taskSubtitleLayoutModeLabel(selectedTask) }}</div>
+                            </div>
+                            <button
+                                class="mac-btn mac-btn-ghost h-7 px-2 text-[11px]"
+                                :disabled="!taskSubtitleLayoutPreviewEligible(selectedTask)"
+                                @click="subtitleLayoutPreviewOpen = !subtitleLayoutPreviewOpen"
+                            >
+                                {{ subtitleLayoutPreviewOpen ? '隐藏预览' : '显示预览' }}
+                            </button>
+                        </div>
+                        <div v-if="!taskSubtitleLayoutPreviewEligible(selectedTask)" class="mt-2 text-[11px] text-[color:var(--text-muted)]">
+                            当前任务未启用硬字幕烧录，预览不可用。
+                        </div>
+                        <div
+                            v-else-if="subtitleLayoutPreviewOpen"
+                            class="mt-3 rounded-xl border border-[color:var(--line-soft)] overflow-hidden"
+                            style="background: linear-gradient(180deg, rgba(36,46,62,.92), rgba(24,32,46,.96)); min-height: 156px; position: relative;"
+                        >
+                            <div class="absolute inset-x-0 top-0 h-10 px-3 flex items-center text-[10px] tracking-wide uppercase text-white/45">
+                                Preview Canvas
+                            </div>
+                            <template v-for="line in taskSubtitleLayoutPreviewLines(selectedTask)" :key="line.key">
+                                <div
+                                    class="absolute left-3 right-3 rounded-lg px-3 py-2 text-center shadow-sm"
+                                    :style="line.align === 'top'
+                                        ? 'top: 36px; background: rgba(8,12,18,.72); color: rgba(255,255,255,.96);'
+                                        : 'bottom: 14px; background: rgba(8,12,18,.72); color: rgba(255,255,255,.96);'"
+                                >
+                                    <div class="whitespace-pre-line leading-relaxed" :style="line.align === 'top' ? 'font-size: 14px;' : 'font-size: 13px; letter-spacing: .2px;'">
+                                        {{ line.text }}
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+
+                    <div v-if="selectedTask.subtitle_note" class="detail-card text-xs" style="border-color: rgba(193,123,24,.24); background: rgba(193,123,24,.08)">
+                        <div class="font-semibold mb-1" style="color: var(--warning)">字幕处理</div>
+                        <div>{{ selectedTask.subtitle_note }}</div>
+                        <div v-if="selectedTask.subtitle_file_path" class="font-mono mt-2 break-all">{{ selectedTask.subtitle_file_path }}</div>
+                    </div>
+
+                    <div v-if="selectedTask.type === 'video'" class="detail-card text-xs" style="border-color: rgba(10,132,255,.2); background: rgba(10,132,255,.05)">
+                        <div class="flex items-center justify-between gap-2">
+                            <div class="font-semibold" style="color: var(--accent)">字幕诊断</div>
+                            <div class="text-[color:var(--text-muted)]">可随时执行</div>
+                        </div>
+                        <div class="mt-2">
+                            <button class="mac-btn mac-btn-ghost h-7 px-2 text-[11px]" @click="analyzeMissingSubtitles(selectedTask)">
+                                识别缺失项
+                            </button>
+                        </div>
+                    </div>
+
+                    <div v-if="subtitleRetryTargets(selectedTask).length" class="detail-card text-xs" style="border-color: rgba(10,132,255,.24); background: rgba(10,132,255,.08)">
+                        <div class="flex items-center justify-between gap-2">
+                            <div class="font-semibold" style="color: var(--accent)">缺失项补处理</div>
+                            <div class="font-mono text-[color:var(--text-muted)]">{{ subtitleRetryTargets(selectedTask).length }} 项</div>
+                        </div>
+
+                        <div class="mt-2 flex flex-col gap-1.5">
+                            <div
+                                v-for="name in subtitleRetryTargets(selectedTask).slice(0, 8)"
+                                :key="`miss-${selectedTask.task_id}-${name}`"
+                                class="flex items-center gap-2"
+                            >
+                                <div class="font-mono flex-1 line-clamp-1" :title="name">{{ name }}</div>
+                                <button class="mac-btn mac-btn-ghost h-6 px-2 text-[10px]" @click="retryMissingSubtitles(selectedTask, [name])">
+                                    仅处理此项
+                                </button>
+                            </div>
+                            <div v-if="subtitleRetryTargets(selectedTask).length > 8" class="text-[11px] text-[color:var(--text-muted)]">
+                                还有 {{ subtitleRetryTargets(selectedTask).length - 8 }} 项未展开
+                            </div>
+                        </div>
+
+                        <div class="mt-2 flex items-center gap-2">
+                            <button class="mac-btn mac-btn-primary-soft h-7 px-2 text-[11px]" @click="retryMissingSubtitles(selectedTask)">
+                                补处理全部缺失项
+                            </button>
+                            <button class="mac-btn mac-btn-ghost h-7 px-2 text-[11px]" @click="analyzeMissingSubtitles(selectedTask)">
+                                重新识别
+                            </button>
+                        </div>
+                    </div>
+
+                    <div v-if="selectedTask.error_message" class="detail-card text-xs" style="border-color: rgba(212,76,68,.24); background: rgba(212,76,68,.08)">
+                        <div class="font-semibold mb-1 text-danger">错误详情</div>
+                        <div class="break-words whitespace-pre-wrap">{{ selectedTask.error_message }}</div>
+                        <button class="mac-btn mac-btn-ghost mt-2 h-7 px-2" @click="copyText(selectedTask.error_message)">复制错误</button>
+                    </div>
+
+                    <div v-if="Array.isArray(selectedTask.engine_log) && selectedTask.engine_log.length" class="detail-card text-xs">
+                        <div class="flex items-center justify-between gap-2">
+                            <div class="font-semibold">引擎日志</div>
+                            <button class="mac-btn mac-btn-ghost h-7 px-2 text-[11px]" @click="copyTaskEngineLog(selectedTask)">复制日志</button>
+                        </div>
+                        <pre class="mt-2 font-mono whitespace-pre-wrap break-words rounded-lg border border-[color:var(--line-soft)] p-2 max-h-48 overflow-auto text-[11px] leading-relaxed text-[color:var(--text-muted)]">{{ taskEngineLogText(selectedTask) }}</pre>
+                    </div>
+                </div>
+            </aside>
+        </transition>
+    </main>
+
+    <footer class="statusbar">
+        <div class="statusbar-left">
+            <span class="dot" :class="wsConnected ? 'dot-online' : 'dot-retry'"></span>
+            <span>{{ wsConnected ? '已连接服务' : '服务重连中' }} (Port: {{ runtimePortLabel }})</span>
+        </div>
+        <div class="statusbar-right">
+            <span v-if="queueStats.active > 0" class="font-mono">{{ aggregateSpeedLabel }} · {{ queueStats.active }} 个任务运行中</span>
+            <span v-else>空闲</span>
+            <div class="statusbar-progress-track">
+                <div class="statusbar-progress-fill" :style="{ width: `${overallProgress}%` }"></div>
+            </div>
+        </div>
+    </footer>
+
+    <transition name="fade">
+        <div v-if="showAddSheet" class="sheet-mask" @click.self="showAddSheet = false">
+            <div class="sheet">
+                <div class="sheet-header">
+                    <div>
+                        <div class="text-sm font-semibold">{{ composer.mode === 'local_subtitles' ? '本地视频字幕' : '新建下载任务' }}</div>
+                        <div class="text-xs text-[color:var(--text-muted)] mt-0.5">
+                            {{ composer.mode === 'local_subtitles' ? '扫描保存目录里的视频文件并生成字幕' : '支持多行链接，每行一个 URL' }}
+                        </div>
+                    </div>
+                    <button class="icon-btn" @click="showAddSheet = false">
+                        <i data-lucide="x" class="w-4 h-4"></i>
+                    </button>
+                </div>
+
+                <div class="sheet-body">
+                    <div>
+                        <label class="block text-xs font-semibold text-[color:var(--text-muted)] mb-1.5">任务模式</label>
+                        <div class="segment">
+                            <button class="segment-btn" :class="{ active: composer.mode === 'video_download' }" @click="setComposerMode('video_download')">下载视频</button>
+                            <button class="segment-btn" :class="{ active: composer.mode === 'audio_download' }" @click="setComposerMode('audio_download')">下载音频</button>
+                            <button class="segment-btn" :class="{ active: composer.mode === 'local_subtitles' }" @click="setComposerMode('local_subtitles')">本地视频字幕</button>
+                        </div>
+                    </div>
+
+                    <div v-if="composer.mode !== 'local_subtitles'">
+                        <div class="flex items-center justify-between gap-3 mb-1.5">
+                            <label class="block text-xs font-semibold text-[color:var(--text-muted)]">链接</label>
+                            <button class="mac-btn mac-btn-ghost h-7 px-2 text-[11px]" :disabled="formatProbeBusy || !inputUrls.trim()" @click="probeFormats">
+                                <i data-lucide="radar" class="w-3.5 h-3.5"></i>
+                                {{ formatProbeBusy ? '探测中...' : '探测格式' }}
+                            </button>
+                        </div>
+                        <textarea
+                            v-model="inputUrls"
+                            class="textarea font-mono"
+                            placeholder="https://www.youtube.com/watch?v=..."
+                        ></textarea>
+                        <div class="text-[11px] text-[color:var(--text-muted)] mt-1">
+                            探测只读取首个链接，用来判断当前环境能看到的最高分辨率和当前选择是否可用。
+                        </div>
+                    </div>
+
+                    <div v-else class="detail-card">
+                        <div class="text-xs font-semibold text-[color:var(--text-muted)] uppercase tracking-wide">本地视频来源</div>
+                        <div class="mt-2 text-sm">
+                            将扫描当前保存目录中的 MP4、MKV、WebM、MOV、M4V 视频，并按你的字幕策略补齐英文或中英字幕。
+                        </div>
+                        <div class="text-xs text-[color:var(--text-muted)] mt-2">
+                            当前目录：<span class="font-mono">{{ composer.path || '默认目录' }}</span>
+                            <button class="mac-btn mac-btn-ghost h-7 px-2 ml-2" @click="changePath">修改</button>
+                        </div>
+                    </div>
+
+                    <div v-if="formatProbeError" class="detail-card text-xs" style="border-color: rgba(212,76,68,.24); background: rgba(212,76,68,.06)">
+                        <div class="font-semibold text-danger">格式探测失败</div>
+                        <div class="mt-1">{{ formatProbeError }}</div>
+                        <div v-if="formatProbeResult && formatProbeResult.auth_source_label" class="mt-2 text-[color:var(--text-muted)]">
+                            浏览器登录态来源：{{ formatProbeResult.auth_source_label }}
+                        </div>
+                    </div>
+
+                    <div v-if="formatProbeResult" class="detail-card text-xs" :style="formatProbeResult.selected_quality_available ? 'border-color: rgba(25,135,84,.24); background: rgba(25,135,84,.06)' : 'border-color: rgba(212,76,68,.24); background: rgba(212,76,68,.06)'">
+                        <div class="flex items-start justify-between gap-3">
+                            <div class="min-w-0">
+                                <div class="font-semibold" :style="formatProbeResult.selected_quality_available ? 'color: var(--success)' : 'color: var(--danger)'">
+                                    {{ formatProbeResult.title || '格式探测结果' }}
+                                </div>
+                                <div v-if="formatProbeResult.uploader" class="text-[color:var(--text-muted)] mt-1 line-clamp-1">
+                                    {{ formatProbeResult.uploader }}
+                                </div>
+                            </div>
+                            <button
+                                v-if="formatProbeResult.recommended_quality && formatProbeResult.recommended_quality !== 'best' && String(formatProbeResult.recommended_quality) !== String(composer.quality)"
+                                class="mac-btn mac-btn-ghost h-7 px-2 text-[11px]"
+                                @click="applyProbeRecommendation"
+                            >
+                                用推荐值
+                            </button>
+                        </div>
+                        <div class="mt-2 flex flex-wrap gap-2">
+                            <span class="task-mini-pill">最高可见 {{ formatProbeResult.highest_visible_quality || '--' }}p</span>
+                            <span class="task-mini-pill" v-if="formatProbeResult.stable_highest_quality">稳定可下 {{ formatProbeResult.stable_highest_quality }}p</span>
+                            <span class="task-mini-pill">当前选择 {{ composer.format.toUpperCase() }} / {{ composer.quality === 'best' ? '最佳' : `${composer.quality}p` }}</span>
+                            <span class="task-mini-pill" v-if="formatProbeResult.probe_target === 'playlist_first_entry'">合集首个视频</span>
+                            <span class="task-mini-pill" v-if="formatProbeResult.auth_source_label">登录态 {{ formatProbeResult.auth_source_label }}</span>
+                        </div>
+                        <div v-if="formatProbeResult.message" class="mt-2 text-[color:var(--text-muted)]">
+                            {{ formatProbeResult.message }}
+                        </div>
+                        <div class="mt-2" :style="formatProbeResult.selected_quality_available ? 'color: var(--success)' : 'color: var(--danger)'">
+                            {{ formatProbeResult.selected_quality_available
+                                ? '当前选择在探测结果中可用。'
+                                : (formatProbeResult.selected_quality_reason || '当前选择不在探测到的可用格式内。') }}
+                        </div>
+                        <div v-if="Array.isArray(formatProbeResult.available_qualities) && formatProbeResult.available_qualities.length" class="mt-2">
+                            <div class="text-[color:var(--text-muted)] mb-1">可见清晰度</div>
+                            <div class="flex flex-wrap gap-1.5 font-mono">
+                                <span v-for="q in formatProbeResult.available_qualities" :key="`probe-q-${q}`" class="task-mini-pill">{{ q }}p</span>
+                            </div>
+                        </div>
+                        <div v-if="Array.isArray(formatProbeResult.stable_available_qualities) && formatProbeResult.stable_available_qualities.length" class="mt-2">
+                            <div class="text-[color:var(--text-muted)] mb-1">稳定可下载清晰度</div>
+                            <div class="flex flex-wrap gap-1.5 font-mono">
+                                <span v-for="q in formatProbeResult.stable_available_qualities" :key="`probe-stable-q-${q}`" class="task-mini-pill">{{ q }}p</span>
+                            </div>
+                            <div v-if="formatProbeResult.stable_auth_source_label" class="mt-1 text-[11px] text-[color:var(--text-muted)]">
+                                稳定链路来源：{{ formatProbeResult.stable_auth_source_label }}
+                            </div>
+                        </div>
+                        <div v-if="Array.isArray(formatProbeResult.sample_formats) && formatProbeResult.sample_formats.length" class="mt-2">
+                            <div class="text-[color:var(--text-muted)] mb-1">格式样本</div>
+                            <div class="flex flex-wrap gap-1.5">
+                                <span v-for="row in formatProbeResult.sample_formats.slice(0, 8)" :key="`probe-f-${row.height}-${row.ext}-${row.audio}`" class="task-mini-pill">{{ row.label }}</span>
+                            </div>
+                        </div>
+                        <div v-if="Array.isArray(formatProbeResult.auth_attempts) && formatProbeResult.auth_attempts.length" class="mt-2">
+                            <div class="text-[color:var(--text-muted)] mb-1">探测尝试</div>
+                            <div class="flex flex-col gap-1">
+                                <div v-for="(row, idx) in formatProbeResult.auth_attempts.slice(0, 6)" :key="`probe-auth-${idx}`" class="flex items-center justify-between gap-3">
+                                    <span>{{ row.label }}</span>
+                                    <span class="text-[color:var(--text-muted)] text-right">{{ row.status === 'success' ? '成功' : (row.error || '失败') }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div v-if="composer.mode !== 'local_subtitles'" class="flex items-center justify-end gap-3 flex-wrap">
+                        <div class="text-xs text-[color:var(--text-muted)]">
+                            当前保存目录：
+                            <span class="font-mono">{{ composer.path || '默认目录' }}</span>
+                            <button class="mac-btn mac-btn-ghost h-7 px-2 ml-2" @click="changePath">修改</button>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-semibold text-[color:var(--text-muted)] mb-1.5">格式</label>
+                            <select v-model="composer.format" class="select">
+                                <template v-if="composer.type === 'video'">
+                                    <option value="mp4">MP4</option>
+                                    <option value="mkv">MKV</option>
+                                    <option value="webm">WebM</option>
+                                </template>
+                                <template v-else>
+                                    <option value="mp3">MP3</option>
+                                    <option value="m4a">M4A</option>
+                                    <option value="flac">FLAC</option>
+                                    <option value="wav">WAV</option>
+                                </template>
+                            </select>
+                        </div>
+                        <div v-if="composer.mode !== 'local_subtitles'">
+                            <label class="block text-xs font-semibold text-[color:var(--text-muted)] mb-1.5">质量</label>
+                            <select v-model="composer.quality" class="select">
+                                <template v-if="composer.type === 'video'">
+                                    <option value="best">最佳质量</option>
+                                    <option value="2160">2160p (4K)</option>
+                                    <option value="1440">1440p (2K)</option>
+                                    <option value="1080">1080p</option>
+                                    <option value="720">720p</option>
+                                    <option value="480">480p</option>
+                                    <option value="360">360p</option>
+                                </template>
+                                <template v-else>
+                                    <option value="best">最佳质量</option>
+                                    <option value="320">320 kbps</option>
+                                    <option value="256">256 kbps</option>
+                                    <option value="192">192 kbps</option>
+                                    <option value="128">128 kbps</option>
+                                </template>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div v-if="composer.type === 'video'" class="detail-card">
+                        <div class="text-xs font-semibold text-[color:var(--text-muted)] uppercase tracking-wide">字幕设置</div>
+
+                        <div class="grid grid-cols-2 gap-3 mt-3">
+                            <div>
+                                <label class="block text-xs font-semibold text-[color:var(--text-muted)] mb-1">字幕策略</label>
+                                <select v-model="composer.subtitle_strategy" class="select">
+                                    <option value="none" v-if="composer.mode !== 'local_subtitles'">不下载字幕</option>
+                                    <option value="en">英文字幕</option>
+                                    <option value="bilingual">英文 + 中文字幕</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-[color:var(--text-muted)] mb-1">输出方式</label>
+                                <select v-if="composer.subtitle_strategy === 'none'" class="select" disabled>
+                                    <option>无字幕输出</option>
+                                </select>
+                                <select v-else v-model="composer.subtitle_output" class="select">
+                                    <option value="file">字幕文件</option>
+                                    <option value="soft" :disabled="!canEmbedSubtitles">软字幕封装</option>
+                                    <option value="burn" :disabled="!canBurninSubtitles">硬字幕视频</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="text-xs text-[color:var(--text-muted)] mt-2" v-if="composer.subtitle_strategy !== 'none'">
+                            {{ composer.mode === 'local_subtitles'
+                                ? '本地视频会先寻找同名英文字幕；没有字幕时使用 Whisper 生成英文字幕。'
+                                : '优先下载视频自带英文字幕；没有英文字幕时使用 Whisper 生成英文字幕。' }}
+                        </div>
+
+                        <div class="mt-3 flex items-center justify-between gap-2" :style="{ opacity: composer.subtitle_strategy === 'bilingual' ? 1 : .45 }">
+                            <div>
+                                <div class="text-sm">严格使用 Codex 翻译</div>
+                                <div class="text-xs text-[color:var(--text-muted)]">
+                                    {{ composer.subtitle_strategy === 'bilingual' ? '开启后若 Codex 翻译失败，任务直接报错，不再回退普通翻译。' : '仅在生成中文字幕时生效。关闭时仍会优先走 Codex。' }}
+                                </div>
+                            </div>
+                            <label class="toggle">
+                                <input type="checkbox" v-model="settings.subtitles_codex_strict" :disabled="composer.subtitle_strategy !== 'bilingual'">
+                                <span class="toggle-ui"></span>
+                            </label>
+                        </div>
+
+                        <div class="mt-3" :style="{ opacity: composer.subtitle_output === 'burn' ? 1 : .45 }">
+                            <label class="block text-xs font-semibold text-[color:var(--text-muted)] mb-1">双语烧录布局</label>
+                            <select v-model="settings.subtitles_bilingual_layout" class="select" :disabled="composer.subtitle_output !== 'burn'">
+                                <option value="">标准双行（底部）</option>
+                                <option value="split_cn_top_en_bottom">中文在上，英文在下</option>
+                            </select>
+                            <div class="text-[11px] text-[color:var(--text-muted)] mt-1">
+                                仅硬字幕烧录时生效。检测到中英双语字幕后，会把中文放在画面上方、英文放在画面下方。
+                            </div>
+                        </div>
+                    </div>
+
+                    <div v-if="health.ffmpeg === false" class="warn-block">
+                        FFmpeg 未检测到：{{ health.ffmpeg_message || '音视频后处理可能失败' }}
+                    </div>
+                </div>
+
+                <div class="sheet-footer">
+                    <button class="mac-btn mac-btn-ghost" @click="showAddSheet = false">取消</button>
+                    <button class="mac-btn mac-btn-primary" :disabled="submitDisabled || downloadingSubmit" @click="startDownload">
+                        <i data-lucide="download" class="w-4 h-4"></i>
+                        {{ downloadingSubmit ? '提交中...' : (composer.mode === 'local_subtitles' ? '开始字幕处理' : '开始下载') }}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </transition>
+
+    <transition name="fade">
+        <div v-if="showSettings" class="sheet-mask" @click.self="showSettings = false">
+            <div class="sheet" style="width:min(520px, 96vw)">
+                <div class="sheet-header">
+                    <div class="text-sm font-semibold">偏好设置</div>
+                    <button class="icon-btn" @click="showSettings = false">
+                        <i data-lucide="x" class="w-4 h-4"></i>
+                    </button>
+                </div>
+
+                <div class="sheet-body">
+                    <div>
+                        <label class="block text-xs font-semibold text-[color:var(--text-muted)] mb-1">默认保存目录</label>
+                        <input v-model="composer.path" class="input font-mono" placeholder="/Users/yourname/Downloads/YouTubeDownloader">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-[color:var(--text-muted)] mb-1">并发下载数：{{ settings.max_concurrent }}</label>
+                        <input type="range" min="1" max="5" v-model.number="settings.max_concurrent" class="w-full accent-[color:var(--accent)]">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-[color:var(--text-muted)] mb-1">网络代理</label>
+                        <input v-model="settings.proxy" class="input" placeholder="http://127.0.0.1:7890 或 socks5h://127.0.0.1:7890">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-[color:var(--text-muted)] mb-1">YouTube cookies.txt</label>
+                        <div class="flex gap-2">
+                            <input v-model="settings.cookies_file" class="input font-mono text-xs" placeholder="/Users/you/Downloads/cookies.txt">
+                            <button class="mac-btn mac-btn-ghost shrink-0" @click="chooseCookiesFile">
+                                <i data-lucide="file-search" class="w-4 h-4"></i>
+                                选择
+                            </button>
+                        </div>
+                        <div class="text-xs mt-1" :class="settings.cookies_file && !health.cookies_file_exists ? 'text-warning' : 'text-[color:var(--text-muted)]'">
+                            {{ settings.cookies_file
+                                ? (health.cookies_file_exists ? '已检测到 cookies.txt，下载会优先使用它。' : '保存设置后会检测该文件；若路径不存在，下载会自动跳过。')
+                                : '可选。浏览器登录态读取失败时，用浏览器导出的 cookies.txt 作为兜底。' }}
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-[color:var(--text-muted)] mb-1">文件名模板</label>
+                        <input v-model="settings.filename_template" class="input">
+                        <div class="text-xs text-[color:var(--text-muted)] mt-1">可用变量：{title} {id} {uploader} {date} {ext}</div>
+                    </div>
+
+                    <div class="detail-card">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <div class="text-sm">下载完成后打开文件夹</div>
+                                <div class="text-xs text-[color:var(--text-muted)]">自动在 Finder 中定位输出文件</div>
+                            </div>
+                            <label class="toggle">
+                                <input type="checkbox" v-model="settings.auto_open">
+                                <span class="toggle-ui"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="detail-card">
+                        <div class="flex items-center justify-between gap-3">
+                            <div>
+                                <div class="text-sm">稳定下载模式</div>
+                                <div class="text-xs text-[color:var(--text-muted)]">开启后增加 yt-dlp 重试和请求间隔，并使用更保守的 YouTube 客户端。下载会更稳，但可能稍慢。</div>
+                            </div>
+                            <label class="toggle">
+                                <input type="checkbox" v-model="settings.stability_mode">
+                                <span class="toggle-ui"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="detail-card">
+                        <div class="flex items-center justify-between gap-3">
+                            <div>
+                                <div class="text-sm">yt-dlp 版本</div>
+                                <div class="text-xs text-[color:var(--text-muted)]">当前：{{ health.yt_dlp_version || '--' }}。YouTube 更新后下载异常时，可手动更新。</div>
+                            </div>
+                            <button class="mac-btn mac-btn-ghost" :disabled="updatingYtdlp" @click="updateYtdlp">
+                                <i data-lucide="download-cloud" class="w-4 h-4"></i>
+                                {{ updatingYtdlp ? '更新中...' : '更新 yt-dlp' }}
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="detail-card">
+                        <div class="flex items-center justify-between gap-3">
+                            <div>
+                                <div class="text-sm">默认严格使用 Codex 翻译</div>
+                                <div class="text-xs text-[color:var(--text-muted)]">开启后，字幕翻译若无法调用 Codex，将直接报错，不再回退普通翻译。</div>
+                            </div>
+                            <label class="toggle">
+                                <input type="checkbox" v-model="settings.subtitles_codex_strict">
+                                <span class="toggle-ui"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="detail-card">
+                        <div class="flex items-center justify-between gap-3">
+                            <div>
+                                <div class="text-sm">维护工具</div>
+                                <div class="text-xs text-[color:var(--text-muted)]">从已有下载目录扫描，重建缺失字幕或失败项的补处理任务。</div>
+                            </div>
+                            <button class="mac-btn mac-btn-ghost" :disabled="rebuildBusy" @click="openRebuildSheet">
+                                <i data-lucide="search" class="w-4 h-4"></i>
+                                {{ rebuildBusy ? '扫描中...' : '扫描重建' }}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sheet-footer">
+                    <button class="mac-btn mac-btn-ghost" @click="showSettings = false">取消</button>
+                    <button class="mac-btn mac-btn-primary" :disabled="savingSettings" @click="saveSettings">
+                        {{ savingSettings ? '保存中...' : '保存设置' }}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </transition>
+
+    <transition name="fade">
+        <div v-if="showRebuildSheet" class="sheet-mask" @click.self="showRebuildSheet = false">
+            <div class="sheet" style="width:min(560px, 96vw)">
+                <div class="sheet-header">
+                    <div>
+                        <div class="text-sm font-semibold">从现有文件夹扫描并重建任务</div>
+                        <div class="text-xs text-[color:var(--text-muted)] mt-0.5">不会重新下载视频，仅为缺失项创建字幕补处理任务</div>
+                    </div>
+                    <button class="icon-btn" @click="showRebuildSheet = false">
+                        <i data-lucide="x" class="w-4 h-4"></i>
+                    </button>
+                </div>
+
+                <div class="sheet-body">
+                    <div>
+                        <label class="block text-xs font-semibold text-[color:var(--text-muted)] mb-1.5">扫描目录</label>
+                        <input
+                            v-model="rebuildForm.savePath"
+                            class="input font-mono"
+                            placeholder="/Users/yourname/Downloads/YouTubeDownloader"
+                        >
+                        <div class="text-xs text-[color:var(--text-muted)] mt-1">请填写已下载视频和字幕所在目录。</div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-[color:var(--text-muted)] mb-1.5">原始链接（可选）</label>
+                        <input
+                            v-model="rebuildForm.sourceUrl"
+                            class="input font-mono"
+                            placeholder="https://www.youtube.com/watch?v=... 或播放列表链接"
+                        >
+                        <div class="text-xs text-[color:var(--text-muted)] mt-1">用于提升匹配精度；留空则按本地文件智能匹配。</div>
+                    </div>
+
+                    <div class="detail-card text-xs">
+                        <div class="font-semibold mb-1">本次重建参数</div>
+                        <div class="text-[color:var(--text-muted)]">
+                            格式 {{ composer.type === 'video' ? composer.format.toUpperCase() : 'MP4' }} ·
+                            质量 {{ composer.type === 'video' ? composer.quality : '1080' }} ·
+                            {{ (composer.type === 'video' ? composer.format : 'mp4') === 'mp4' ? '硬字幕烧录' : '软字幕合并' }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sheet-footer">
+                    <button class="mac-btn mac-btn-ghost" @click="showRebuildSheet = false">取消</button>
+                    <button class="mac-btn mac-btn-primary" :disabled="rebuildBusy || !String(rebuildForm.savePath || '').trim()" @click="runRebuildScan">
+                        <i data-lucide="search" class="w-4 h-4"></i>
+                        {{ rebuildBusy ? '扫描中...' : '开始扫描重建' }}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </transition>
+
+    <transition name="fade">
+        <div v-if="showMobileInspector && selectedTask" class="mobile-inspector" @click.self="showMobileInspector = false">
+            <div class="mobile-inspector-card">
+                <div class="sheet-header">
+                    <div class="min-w-0">
+                        <div class="text-sm font-semibold line-clamp-1">{{ selectedTask.title || '未命名任务' }}</div>
+                        <div class="text-xs text-[color:var(--text-muted)] line-clamp-1 mt-0.5">{{ selectedTask.uploader || selectedTask.url }}</div>
+                    </div>
+                    <button class="icon-btn" @click="showMobileInspector = false">
+                        <i data-lucide="x" class="w-4 h-4"></i>
+                    </button>
+                </div>
+                <div class="sheet-body">
+                    <div class="detail-card">
+                        <div class="text-xs text-[color:var(--text-muted)] uppercase tracking-wide">状态</div>
+                        <div class="mt-2">
+                            <span class="status-chip" :class="taskStatusClass(selectedTask.status)">{{ taskStatusLabel(selectedTask) }}</span>
+                        </div>
+                        <div class="mt-2 text-xs font-mono text-[color:var(--text-muted)]">{{ selectedTask.speed || '--' }} / ETA {{ selectedTask.eta || '--' }}</div>
+                    </div>
+                    <div class="detail-card text-xs">
+                        <div class="font-semibold mb-1">来源 URL</div>
+                        <div class="font-mono break-all text-[color:var(--text-muted)]">{{ selectedTask.url }}</div>
+                        <button class="mac-btn mac-btn-ghost h-7 px-2 mt-2" @click="copyText(selectedTask.url)">复制 URL</button>
+                    </div>
+                    <div v-if="selectedTask.error_message" class="detail-card text-xs" style="border-color: rgba(212,76,68,.24); background: rgba(212,76,68,.08)">
+                        <div class="font-semibold mb-1 text-danger">错误详情</div>
+                        <div class="break-words whitespace-pre-wrap">{{ selectedTask.error_message }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </transition>
+
+    <transition-group name="toast" tag="div" class="toast-wrap">
+        <div v-for="t in toasts" :key="t.id" class="toast-card" :class="toastTypeClass(t.type)">
+            <div class="toast-icon" :class="toastTypeClass(t.type)">
+                <i :data-lucide="toastIcon(t.type)" class="w-3.5 h-3.5"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+                <div class="text-[13px] font-semibold" :class="toastClass(t.type)">{{ toastTitle(t.type) }}</div>
+                <div class="text-xs text-[color:var(--text-muted)] mt-0.5 break-words">{{ t.message }}</div>
+            </div>
+            <button class="icon-btn w-6 h-6" @click="removeToast(t.id)">
+                <i data-lucide="x" class="w-3.5 h-3.5"></i>
+            </button>
+        </div>
+    </transition-group>
+
+</div>
+
+<script>
+    const { createApp, ref, reactive, computed, onMounted, onBeforeUnmount, watch, nextTick } = Vue;
+
+    createApp({
+        setup() {
+            const showAddSheet = ref(false);
+            const showSettings = ref(false);
+            const showRebuildSheet = ref(false);
+            const showMobileInspector = ref(false);
+            const inspectorOpen = ref(false);
+            const subtitleLayoutPreviewOpen = ref(false);
+            const downloadingSubmit = ref(false);
+            const rebuildBusy = ref(false);
+            const savingSettings = ref(false);
+            const updatingYtdlp = ref(false);
+            const wsConnected = ref(false);
+            const isDropActive = ref(false);
+
+            const inputUrls = ref('');
+            const formatProbeBusy = ref(false);
+            const formatProbeResult = ref(null);
+            const formatProbeError = ref('');
+            const tasks = ref([]);
+            const selectedTaskId = ref('');
+            const activeFilter = ref('all');
+
+            const toasts = ref([]);
+            let toastSeed = 0;
+            const taskErrorState = new Map();
+            let taskErrorBootstrapped = false;
+            const nowTick = ref(Date.now());
+            const taskStepClock = {};
+            let suppressProbeReset = false;
+
+            const health = reactive({
+                ffmpeg: null,
+                ffmpeg_message: '',
+                yt_dlp_version: '',
+                cookies_file: '',
+                cookies_file_exists: false,
+                stability_mode: false,
+            });
+
+            const composer = reactive({
+                mode: 'video_download',
+                type: 'video',
+                format: 'mp4',
+                quality: '1080',
+                path: '',
+                subtitle_only: false,
+                subtitle_existing_only: false,
+                subtitle_strategy: 'none',
+                subtitle_output: 'file',
+            });
+
+            const settings = reactive({
+                max_concurrent: 3,
+                proxy: '',
+                filename_template: '{uploader} - {title}.{ext}',
+                auto_open: false,
+                subtitles_download: false,
+                subtitles_embed: false,
+                subtitles_burnin: false,
+                subtitles_langs: 'en',
+                subtitles_translate: '',
+                subtitles_codex_strict: false,
+                subtitles_transcribe_missing: false,
+                subtitles_bilingual_layout: '',
+                subtitles_review_mode: false,
+                cookies_file: '',
+                stability_mode: false,
+            });
+            const rebuildForm = reactive({
+                savePath: '',
+                sourceUrl: '',
+            });
+
+            const selectedTask = computed(() => tasks.value.find(t => t.task_id === selectedTaskId.value) || null);
+
+            const queueStats = computed(() => {
+                let active = 0;
+                let pending = 0;
+                let failed = 0;
+                let completed = 0;
+
+                for (const t of tasks.value) {
+                    if (['downloading', 'processing', 'preparing', 'review_pending'].includes(t.status)) active += 1;
+                    if (['queued', 'paused'].includes(t.status)) pending += 1;
+                    if (t.status === 'error') failed += 1;
+                    if (t.status === 'completed') completed += 1;
+                }
+
+                return {
+                    total: tasks.value.length,
+                    active,
+                    pending,
+                    failed,
+                    completed,
+                };
+            });
+
+            const filteredTasks = computed(() => {
+                if (activeFilter.value === 'all') {
+                    return tasks.value;
+                }
+                if (activeFilter.value === 'active') {
+                    return tasks.value.filter(t => ['downloading', 'processing', 'preparing', 'review_pending'].includes(t.status));
+                }
+                if (activeFilter.value === 'pending') {
+                    return tasks.value.filter(t => ['queued', 'paused'].includes(t.status));
+                }
+                if (activeFilter.value === 'error') {
+                    return tasks.value.filter(t => t.status === 'error');
+                }
+                if (activeFilter.value === 'completed') {
+                    return tasks.value.filter(t => t.status === 'completed');
+                }
+                return tasks.value;
+            });
+
+            const latestErrorTask = computed(() => {
+                for (const t of tasks.value) {
+                    if (t.status === 'error') {
+                        return t;
+                    }
+                }
+                return null;
+            });
+
+            const runtimePortLabel = computed(() => {
+                if (location.port) return location.port;
+                return location.protocol === 'https:' ? '443' : '80';
+            });
+
+            const hasPausableTasks = computed(() => {
+                return tasks.value.some(t => ['queued', 'preparing', 'downloading', 'processing', 'review_pending'].includes(t.status));
+            });
+
+            const hasResumableTasks = computed(() => {
+                return tasks.value.some(t => ['paused', 'error', 'processing'].includes(t.status));
+            });
+
+            const overallProgress = computed(() => {
+                const list = tasks.value.filter(t => !['canceled'].includes(t.status));
+                if (!list.length) return 0;
+
+                let total = 0;
+                for (const t of list) {
+                    if (t.status === 'completed') {
+                        total += 100;
+                    } else if (['preparing', 'processing'].includes(t.status)) {
+                        total += Math.max(8, Math.min(95, Number(t.progress || 0)));
+                    } else {
+                        total += Math.max(0, Math.min(100, Number(t.progress || 0)));
+                    }
+                }
+
+                return Math.round(total / list.length);
+            });
+
+            const parseSpeedBytes = (speed) => {
+                if (!speed) return 0;
+                const m = String(speed).trim().match(/([0-9]+(?:\.[0-9]+)?)\s*([KMGT]?)(?:i?B)\/?s/i);
+                if (!m) return 0;
+
+                const num = Number(m[1] || 0);
+                if (!Number.isFinite(num) || num <= 0) return 0;
+
+                const unit = (m[2] || '').toUpperCase();
+                const scale = {
+                    '': 1,
+                    K: 1024,
+                    M: 1024 * 1024,
+                    G: 1024 * 1024 * 1024,
+                    T: 1024 * 1024 * 1024 * 1024,
+                };
+
+                return num * (scale[unit] || 1);
+            };
+
+            const formatSpeed = (bytesPerSec) => {
+                if (!bytesPerSec || bytesPerSec <= 0) return '--';
+
+                const units = ['B/s', 'KB/s', 'MB/s', 'GB/s'];
+                let val = bytesPerSec;
+                let i = 0;
+                while (val >= 1024 && i < units.length - 1) {
+                    val /= 1024;
+                    i += 1;
+                }
+                return `${val >= 100 ? Math.round(val) : val.toFixed(val >= 10 ? 1 : 2)} ${units[i]}`;
+            };
+
+            const aggregateSpeedLabel = computed(() => {
+                let totalBps = 0;
+                for (const t of tasks.value) {
+                    if (t.status === 'downloading') {
+                        totalBps += parseSpeedBytes(t.speed);
+                    }
+                }
+                return formatSpeed(totalBps);
+            });
+
+            const canEmbedSubtitles = computed(() => composer.type === 'video' && ['mp4', 'mkv'].includes(composer.format));
+            const canBurninSubtitles = computed(() => composer.type === 'video' && composer.format === 'mp4');
+            const submitDisabled = computed(() => {
+                if (composer.mode === 'local_subtitles') return !String(composer.path || '').trim();
+                return !inputUrls.value.trim();
+            });
+
+            let ws = null;
+            let heartbeatTimer = null;
+            let reconnectTimer = null;
+            let pollingTimer = null;
+            let clockTimer = null;
+            let destroyed = false;
+
+            const videoFormats = ['mp4', 'mkv', 'webm'];
+            const audioFormats = ['mp3', 'm4a', 'flac', 'wav'];
+            const videoQualities = ['best', '2160', '1440', '1080', '720', '480', '360'];
+            const audioQualities = ['best', '320', '256', '192', '128'];
+
+            const refreshIcons = async () => {
+                await nextTick();
+                try {
+                    lucide.createIcons();
+                } catch (_) {}
+            };
+
+            const toastTitle = (type) => {
+                if (type === 'ok') return '成功';
+                if (type === 'warn') return '提示';
+                if (type === 'error') return '错误';
+                return '通知';
+            };
+
+            const toastClass = (type) => {
+                if (type === 'ok') return 'text-success';
+                if (type === 'warn') return 'text-warning';
+                if (type === 'error') return 'text-danger';
+                return '';
+            };
+
+            const toastTypeClass = (type) => {
+                if (type === 'ok') return 'type-ok';
+                if (type === 'warn') return 'type-warn';
+                if (type === 'error') return 'type-error';
+                return '';
+            };
+
+            const toastIcon = (type) => {
+                if (type === 'ok') return 'check';
+                if (type === 'warn') return 'alert-circle';
+                if (type === 'error') return 'triangle-alert';
+                return 'bell';
+            };
+
+            const pushToast = (message, type = 'info', timeout = null) => {
+                const id = ++toastSeed;
+                const duration = timeout ?? (type === 'error' ? 5200 : 3200);
+                toasts.value.push({ id, message, type });
+                setTimeout(() => removeToast(id), duration);
+                refreshIcons();
+            };
+
+            const removeToast = (id) => {
+                toasts.value = toasts.value.filter(x => x.id !== id);
+            };
+
+            const request = async (path, options = {}) => {
+                const opts = { method: 'GET', ...options };
+                const headers = { ...(opts.headers || {}) };
+                if (opts.body !== undefined && opts.body !== null && !headers['Content-Type']) {
+                    headers['Content-Type'] = 'application/json';
+                }
+                opts.headers = headers;
+
+                if (opts.body && typeof opts.body !== 'string') {
+                    opts.body = JSON.stringify(opts.body);
+                }
+
+                const res = await fetch(path, opts);
+                const raw = await res.text();
+                let json = null;
+                try {
+                    json = raw ? JSON.parse(raw) : null;
+                } catch (_) {
+                    json = null;
+                }
+
+                if (!res.ok) {
+                    const msg = (json && (json.message || json.detail)) || raw || `HTTP ${res.status}`;
+                    throw new Error(msg);
+                }
+
+                return json;
+            };
+
+            const expectSuccess = (resp, fallback = '操作失败') => {
+                if (resp && typeof resp === 'object' && Object.prototype.hasOwnProperty.call(resp, 'status')) {
+                    if (resp.status !== 'success') {
+                        throw new Error(resp.message || fallback);
+                    }
+                }
+                return resp;
+            };
+
+            const upsertTask = (task) => {
+                const i = tasks.value.findIndex(t => t.task_id === task.task_id);
+                if (i < 0) {
+                    tasks.value.unshift(task);
+                } else {
+                    tasks.value[i] = { ...tasks.value[i], ...task };
+                }
+            };
+
+            const removeTaskLocal = (taskId) => {
+                tasks.value = tasks.value.filter(t => t.task_id !== taskId);
+                if (selectedTaskId.value === taskId) {
+                    selectedTaskId.value = tasks.value[0]?.task_id || '';
+                    if (!selectedTaskId.value) {
+                        inspectorOpen.value = false;
+                        showMobileInspector.value = false;
+                    }
+                }
+            };
+
+            const replaceTasks = (list) => {
+                tasks.value = Array.isArray(list) ? list : [];
+                if (!tasks.value.some(t => t.task_id === selectedTaskId.value)) {
+                    selectedTaskId.value = tasks.value[0]?.task_id || '';
+                    if (!selectedTaskId.value) {
+                        inspectorOpen.value = false;
+                        showMobileInspector.value = false;
+                    }
+                }
+            };
+
+            const connectWS = () => {
+                if (destroyed) return;
+
+                try {
+                    const protocol = location.protocol === 'https:' ? 'wss://' : 'ws://';
+                    ws = new WebSocket(`${protocol}${location.host}/ws/progress`);
+                } catch (_) {
+                    scheduleReconnect();
+                    return;
+                }
+
+                ws.onopen = () => {
+                    wsConnected.value = true;
+                    if (heartbeatTimer) clearInterval(heartbeatTimer);
+                    heartbeatTimer = setInterval(() => {
+                        try {
+                            if (ws && ws.readyState === WebSocket.OPEN) {
+                                ws.send('ping');
+                            }
+                        } catch (_) {}
+                    }, 15000);
+                };
+
+                ws.onmessage = (evt) => {
+                    try {
+                        const msg = JSON.parse(evt.data);
+                        if (msg.type === 'snapshot' && Array.isArray(msg.tasks)) {
+                            replaceTasks(msg.tasks);
+                        } else if (msg.type === 'update' && msg.task) {
+                            upsertTask(msg.task);
+                        } else if (msg.type === 'removed' && msg.task_id) {
+                            removeTaskLocal(msg.task_id);
+                        }
+                        refreshIcons();
+                    } catch (_) {}
+                };
+
+                ws.onclose = () => {
+                    wsConnected.value = false;
+                    if (heartbeatTimer) {
+                        clearInterval(heartbeatTimer);
+                        heartbeatTimer = null;
+                    }
+                    ws = null;
+                    scheduleReconnect();
+                };
+
+                ws.onerror = () => {
+                    try {
+                        if (ws) ws.close();
+                    } catch (_) {}
+                };
+            };
+
+            const scheduleReconnect = () => {
+                if (destroyed) return;
+                if (reconnectTimer) clearTimeout(reconnectTimer);
+                reconnectTimer = setTimeout(connectWS, 1600);
+            };
+
+            const refreshTasks = async () => {
+                try {
+                    const data = await request('/api/tasks');
+                    replaceTasks(data?.tasks || []);
+                    refreshIcons();
+                } catch (_) {}
+            };
+
+            const startPolling = () => {
+                if (pollingTimer) clearInterval(pollingTimer);
+                pollingTimer = setInterval(refreshTasks, 2000);
+            };
+
+            const refreshHealth = async () => {
+                const healthRes = await request('/api/health');
+                health.ffmpeg = healthRes?.ffmpeg;
+                health.ffmpeg_message = healthRes?.ffmpeg_message || '';
+                health.yt_dlp_version = healthRes?.yt_dlp_version || '';
+                health.cookies_file = healthRes?.cookies_file || '';
+                health.cookies_file_exists = !!healthRes?.cookies_file_exists;
+                health.stability_mode = !!healthRes?.stability_mode;
+            };
+
+            const bootstrap = async () => {
+                try {
+                    const cfg = await request('/api/config');
+                    composer.path = cfg?.default_path || '';
+                    settings.max_concurrent = cfg?.max_concurrent ?? 3;
+                    settings.proxy = cfg?.proxy ?? '';
+                    settings.filename_template = cfg?.filename_template ?? '{uploader} - {title}.{ext}';
+                    settings.auto_open = !!cfg?.auto_open;
+                    settings.subtitles_download = cfg?.subtitles_download ?? false;
+                    settings.subtitles_embed = cfg?.subtitles_embed ?? false;
+                    settings.subtitles_burnin = cfg?.subtitles_burnin ?? false;
+                    settings.subtitles_langs = cfg?.subtitles_langs ?? 'en';
+                    settings.subtitles_translate = cfg?.subtitles_translate ?? '';
+                    settings.subtitles_codex_strict = !!cfg?.subtitles_codex_strict;
+                    settings.subtitles_transcribe_missing = !!cfg?.subtitles_transcribe_missing;
+                    settings.subtitles_bilingual_layout = cfg?.subtitles_bilingual_layout ?? '';
+                    settings.cookies_file = cfg?.cookies_file ?? '';
+                    settings.stability_mode = !!cfg?.stability_mode;
+
+                    const taskRes = await request('/api/tasks');
+                    replaceTasks(taskRes?.tasks || []);
+
+                    await refreshHealth();
+                } catch (e) {
+                    pushToast(`初始化失败：${e.message || e}`, 'error', 5000);
+                }
+
+                refreshIcons();
+            };
+
+            const setComposerMode = (mode) => {
+                composer.mode = mode;
+                clearFormatProbe();
+                if (mode === 'audio_download') {
+                    composer.type = 'audio';
+                    if (!audioFormats.includes(composer.format)) composer.format = 'mp3';
+                    if (!audioQualities.includes(composer.quality)) composer.quality = '192';
+                    composer.subtitle_strategy = 'none';
+                    composer.subtitle_output = 'file';
+                    return;
+                }
+
+                composer.type = 'video';
+                composer.subtitle_only = false;
+                composer.subtitle_existing_only = false;
+                if (!videoFormats.includes(composer.format)) composer.format = 'mp4';
+                if (mode === 'local_subtitles') {
+                    composer.quality = 'local';
+                    if (composer.subtitle_strategy === 'none') composer.subtitle_strategy = 'bilingual';
+                    return;
+                }
+                if (!videoQualities.includes(composer.quality)) composer.quality = '1080';
+            };
+
+            const subtitleRequestState = () => {
+                const type = composer.type;
+                const format = composer.format;
+                const wantSubtitles = type === 'video' && composer.subtitle_strategy !== 'none';
+                const output = wantSubtitles ? composer.subtitle_output : 'file';
+                const canSoft = ['mp4', 'mkv'].includes(format);
+                const canBurn = format === 'mp4';
+                return {
+                    wantSubtitles,
+                    translate: composer.subtitle_strategy === 'bilingual' ? 'bilingual' : '',
+                    embed: wantSubtitles && output === 'soft' && canSoft,
+                    burnin: wantSubtitles && output === 'burn' && canBurn,
+                    langs: 'en',
+                };
+            };
+
+            const normalizedPayload = (urls) => {
+                const type = composer.type;
+                const format = composer.format;
+                const subState = subtitleRequestState();
+
+                return {
+                    urls,
+                    type,
+                    format,
+                    quality: composer.quality,
+                    save_path: composer.path,
+                    subtitle_only: false,
+                    subtitle_existing_only: false,
+                    local_video_subtitles: false,
+                    subtitles_download: subState.wantSubtitles,
+                    subtitles_embed: subState.embed && !subState.burnin,
+                    subtitles_burnin: subState.burnin,
+                    subtitles_langs: subState.langs,
+                    subtitles_translate: type === 'video' ? subState.translate : '',
+                    subtitles_codex_strict: type === 'video' && !!subState.translate ? !!settings.subtitles_codex_strict : false,
+                    subtitles_transcribe_missing: subState.wantSubtitles,
+                    subtitles_bilingual_layout: type === 'video' && format === 'mp4' && subState.burnin
+                        ? (settings.subtitles_bilingual_layout || '')
+                        : '',
+                    subtitles_review_mode: false,
+                };
+            };
+
+            const clearFormatProbe = () => {
+                if (suppressProbeReset) return;
+                formatProbeResult.value = null;
+                formatProbeError.value = '';
+            };
+
+            const firstProbeUrl = () => {
+                const urls = extractUrlsFromText(inputUrls.value);
+                if (urls.length) return urls[0];
+                const lines = String(inputUrls.value || '')
+                    .split('\n')
+                    .map(x => x.trim())
+                    .filter(Boolean);
+                return lines[0] || '';
+            };
+
+            const currentProbeSignature = () => {
+                return [
+                    firstProbeUrl(),
+                    composer.type,
+                    composer.format,
+                    composer.quality,
+                ].join('||');
+            };
+
+            const hasFreshProbeForCurrentSelection = () => {
+                return formatProbeResult.value && formatProbeResult.value._signature === currentProbeSignature();
+            };
+
+            const probeFormats = async () => {
+                const url = firstProbeUrl();
+                if (!url) {
+                    pushToast('请先输入有效链接。', 'warn');
+                    return;
+                }
+
+                formatProbeBusy.value = true;
+                formatProbeError.value = '';
+                formatProbeResult.value = null;
+                try {
+                    const resp = await request('/api/probe_formats', {
+                        method: 'POST',
+                        body: {
+                            url,
+                            type: composer.type,
+                            format: composer.format,
+                            quality: composer.quality,
+                        },
+                    });
+                    const report = (resp && typeof resp === 'object' && resp.report && typeof resp.report === 'object') ? resp.report : {};
+                    if (Object.keys(report).length) {
+                        formatProbeResult.value = {
+                            ...report,
+                            message: resp?.message || '',
+                            _signature: currentProbeSignature(),
+                        };
+                    }
+                    if (resp?.status !== 'success') {
+                        formatProbeError.value = String(resp?.message || '格式探测失败');
+                        pushToast(`格式探测失败：${formatProbeError.value}`, 'error', 4200);
+                        return;
+                    }
+                    pushToast(resp?.message || '格式探测完成。', 'ok', 2800);
+                } catch (e) {
+                    formatProbeError.value = String(e.message || e || '格式探测失败');
+                    pushToast(`格式探测失败：${formatProbeError.value}`, 'error', 4200);
+                } finally {
+                    formatProbeBusy.value = false;
+                }
+            };
+
+            const applyProbeRecommendation = () => {
+                const recommended = formatProbeResult.value?.recommended_quality;
+                if (!recommended) return;
+                suppressProbeReset = true;
+                composer.quality = String(recommended);
+                setTimeout(() => {
+                    suppressProbeReset = false;
+                }, 0);
+                pushToast(`已切换到推荐清晰度 ${recommended === 'best' ? '最佳' : `${recommended}p`}。`, 'ok', 2400);
+            };
+
+            const openProbeSheet = async () => {
+                openAddSheet();
+                await nextTick();
+                if (firstProbeUrl()) {
+                    await probeFormats();
+                } else {
+                    pushToast('请先在弹窗里粘贴链接，再执行探测。', 'warn', 2600);
+                }
+            };
+
+            const startDownload = async () => {
+                const urls = inputUrls.value
+                    .split('\n')
+                    .map(x => x.trim())
+                    .filter(Boolean);
+
+                if (composer.mode !== 'local_subtitles' && !urls.length) {
+                    pushToast('请先输入至少一个链接。', 'warn');
+                    return;
+                }
+                if (composer.mode !== 'local_subtitles' && composer.type === 'video' && hasFreshProbeForCurrentSelection() && formatProbeResult.value && !formatProbeResult.value.selected_quality_available) {
+                    pushToast(
+                        `当前选择可能不稳定：${formatProbeResult.value.selected_quality_reason || '建议先改用推荐清晰度。'} 程序仍会继续下载，并自动尝试回退。`,
+                        'warn',
+                        5200
+                    );
+                }
+
+                downloadingSubmit.value = true;
+                try {
+                    let resp;
+                    if (composer.mode === 'local_subtitles') {
+                        const subState = subtitleRequestState();
+                        const payload = {
+                            save_path: composer.path,
+                            format: composer.format || 'mp4',
+                            quality: 'local',
+                            subtitles_translate: subState.translate,
+                            subtitles_embed: subState.embed && !subState.burnin,
+                            subtitles_burnin: subState.burnin,
+                            subtitles_codex_strict: !!subState.translate ? !!settings.subtitles_codex_strict : false,
+                            subtitles_transcribe_missing: true,
+                            subtitles_bilingual_layout: subState.burnin ? (settings.subtitles_bilingual_layout || '') : '',
+                        };
+                        resp = expectSuccess(await request('/api/local_subtitles', { method: 'POST', body: payload }), '创建本地字幕任务失败');
+                    } else {
+                        const payload = normalizedPayload(urls);
+                        resp = expectSuccess(await request('/api/download', { method: 'POST', body: payload }), '创建任务失败');
+                    }
+                    if (Array.isArray(resp?.tasks)) {
+                        resp.tasks.forEach(upsertTask);
+                    }
+                    if (composer.mode !== 'local_subtitles') inputUrls.value = '';
+                    clearFormatProbe();
+                    showAddSheet.value = false;
+                    pushToast(`已创建 ${resp?.task_ids?.length || (composer.mode === 'local_subtitles' ? 1 : urls.length)} 个任务。`, 'ok');
+                    refreshIcons();
+                } catch (e) {
+                    pushToast(`创建任务失败：${e.message || e}`, 'error', 5000);
+                } finally {
+                    downloadingSubmit.value = false;
+                }
+            };
+
+            const pauseTask = async (task) => {
+                try {
+                    expectSuccess(await request('/api/pause', { method: 'POST', body: { task_id: task.task_id } }), '暂停失败');
+                    upsertTask({ ...task, status: 'paused' });
+                } catch (e) {
+                    pushToast(`暂停失败：${e.message || e}`, 'error');
+                }
+            };
+
+            const resumeTask = async (task) => {
+                try {
+                    expectSuccess(await request('/api/resume', { method: 'POST', body: { task_id: task.task_id } }), '继续失败');
+                    upsertTask({ ...task, status: 'queued' });
+                } catch (e) {
+                    pushToast(`继续失败：${e.message || e}`, 'error');
+                }
+            };
+
+            const cancelTask = async (taskId) => {
+                try {
+                    expectSuccess(await request('/api/cancel', { method: 'POST', body: { task_id: taskId } }), '取消失败');
+                } catch (e) {
+                    pushToast(`取消失败：${e.message || e}`, 'error');
+                }
+            };
+
+            const removeTask = async (taskId) => {
+                try {
+                    expectSuccess(await request('/api/remove', { method: 'POST', body: { task_id: taskId, delete_files: false } }), '移除失败');
+                    removeTaskLocal(taskId);
+                    refreshIcons();
+                } catch (e) {
+                    pushToast(`移除失败：${e.message || e}`, 'error');
+                }
+            };
+
+            const clearCompleted = async () => {
+                try {
+                    const resp = expectSuccess(await request('/api/clear_completed', { method: 'POST', body: {} }), '清理失败');
+                    tasks.value = tasks.value.filter(t => t.status !== 'completed');
+                    pushToast(`已清理 ${resp?.removed ?? 0} 个已完成任务。`, 'ok');
+                } catch (e) {
+                    pushToast(`清理失败：${e.message || e}`, 'error');
+                }
+            };
+
+            const pauseAll = async () => {
+                const targets = tasks.value.filter(t => ['queued', 'preparing', 'downloading', 'processing', 'review_pending'].includes(t.status));
+                if (!targets.length) {
+                    pushToast('当前没有可暂停的任务。', 'warn', 2200);
+                    return;
+                }
+
+                let ok = 0;
+                for (const task of targets) {
+                    try {
+                        expectSuccess(await request('/api/pause', { method: 'POST', body: { task_id: task.task_id } }), '暂停失败');
+                        upsertTask({ ...task, status: 'paused' });
+                        ok += 1;
+                    } catch (_) {}
+                }
+
+                if (ok === targets.length) {
+                    pushToast(`已暂停 ${ok} 个任务。`, 'ok');
+                } else {
+                    pushToast(`已暂停 ${ok}/${targets.length} 个任务。`, 'warn');
+                }
+            };
+
+            const resumeAll = async () => {
+                const targets = tasks.value.filter(t => ['paused', 'error', 'processing'].includes(t.status));
+                if (!targets.length) {
+                    pushToast('当前没有可继续的任务。', 'warn', 2200);
+                    return;
+                }
+
+                let ok = 0;
+                for (const task of targets) {
+                    try {
+                        expectSuccess(await request('/api/resume', { method: 'POST', body: { task_id: task.task_id } }), '继续失败');
+                        upsertTask({ ...task, status: 'queued' });
+                        ok += 1;
+                    } catch (_) {}
+                }
+
+                if (ok === targets.length) {
+                    pushToast(`已继续 ${ok} 个任务。`, 'ok');
+                } else {
+                    pushToast(`已继续 ${ok}/${targets.length} 个任务。`, 'warn');
+                }
+            };
+
+            const continueBurnin = async (taskId) => {
+                try {
+                    expectSuccess(await request('/api/continue_burnin', { method: 'POST', body: { task_id: taskId } }), '继续烧录失败');
+                    pushToast('已提交继续烧录请求。', 'ok');
+                } catch (e) {
+                    pushToast(`继续烧录失败：${e.message || e}`, 'error');
+                }
+            };
+
+            const normalizeMediaName = (raw) => {
+                const s = String(raw || '').trim();
+                if (!s) return '';
+                const parts = s.split(/[\\/]/);
+                return (parts[parts.length - 1] || '').trim().toLowerCase();
+            };
+
+            const subtitleRetryTargets = (task) => {
+                if (!task || task.type !== 'video') return [];
+                const arr = [];
+                const seen = new Set();
+                for (const raw of [...(task.subtitle_missing_files || []), ...(task.subtitle_failed_files || [])]) {
+                    const n = normalizeMediaName(raw);
+                    if (!n || seen.has(n)) continue;
+                    seen.add(n);
+                    arr.push(raw);
+                }
+                return arr;
+            };
+
+            const subtitleRetryPreview = (task) => {
+                const list = subtitleRetryTargets(task);
+                if (!list.length) return '';
+                const first = list.slice(0, 2).join('、');
+                if (list.length > 2) {
+                    return `${first} 等 ${list.length} 项`;
+                }
+                return first;
+            };
+
+            const shouldOfferAnalyzeMissing = (task) => {
+                if (!task || task.type !== 'video') return false;
+                if (subtitleRetryTargets(task).length > 0) return false;
+                const skipped = Number(task.subtitle_skipped_files || 0);
+                if (skipped > 0) return true;
+                const note = String(task.subtitle_note || '');
+                const m = note.match(/跳过\s*(\d+)/);
+                return !!(m && Number(m[1]) > 0);
+            };
+
+            const analyzeMissingSubtitles = async (task) => {
+                if (!task || !task.task_id) return;
+                try {
+                    const resp = expectSuccess(
+                        await request('/api/analyze_subtitle_missing', { method: 'POST', body: { task_id: task.task_id } }),
+                        '识别缺失项失败'
+                    );
+                    await refreshTasks();
+                    const missingCount = Number(resp?.report?.missing_count || 0);
+                    if (missingCount > 0) {
+                        pushToast(`已识别缺失项 ${missingCount} 个。`, 'warn');
+                    } else {
+                        pushToast('未发现缺失项。', 'ok', 2200);
+                    }
+                } catch (e) {
+                    pushToast(`识别缺失项失败：${e.message || e}`, 'error');
+                }
+            };
+
+            const retryMissingSubtitles = async (task, filenames = []) => {
+                if (!task || !task.task_id) return;
+                try {
+                    const payload = { task_id: task.task_id };
+                    if (Array.isArray(filenames) && filenames.length) {
+                        payload.filenames = filenames;
+                    }
+                    const resp = expectSuccess(
+                        await request('/api/retry_missing_subtitles', { method: 'POST', body: payload }),
+                        '创建补处理任务失败'
+                    );
+                    if (Array.isArray(resp?.tasks)) {
+                        resp.tasks.forEach(upsertTask);
+                    }
+                    const firstTask = Array.isArray(resp?.tasks) && resp.tasks.length ? resp.tasks[0] : null;
+                    if (firstTask?.task_id) {
+                        selectTask(firstTask.task_id);
+                    }
+                    pushToast(resp?.message || '已创建缺失项补处理任务。', 'ok');
+                } catch (e) {
+                    pushToast(`补处理失败：${e.message || e}`, 'error');
+                }
+            };
+
+            const openRebuildSheet = () => {
+                if (rebuildBusy.value) return;
+                rebuildForm.savePath = String(composer.path || '').trim();
+                rebuildForm.sourceUrl = extractUrlsFromText(inputUrls.value)[0] || '';
+                showSettings.value = false;
+                showRebuildSheet.value = true;
+            };
+
+            const runRebuildScan = async () => {
+                if (rebuildBusy.value) return;
+
+                const savePath = String(rebuildForm.savePath || '').trim();
+                if (!savePath) {
+                    pushToast('请先填写扫描目录。', 'warn');
+                    return;
+                }
+                composer.path = savePath;
+
+                const sourceUrl = String(rebuildForm.sourceUrl || '').trim();
+                const format = composer.type === 'video' ? composer.format : 'mp4';
+                const quality = composer.type === 'video' ? composer.quality : '1080';
+                const burnin = format === 'mp4' ? true : false;
+                const embed = !burnin && format === 'mkv';
+
+                rebuildBusy.value = true;
+                try {
+                    const resp = expectSuccess(await request('/api/rebuild_from_folder', {
+                        method: 'POST',
+                        body: {
+                            save_path: savePath,
+                            url: sourceUrl,
+                            format,
+                            quality,
+                            subtitles_burnin: burnin,
+                            subtitles_embed: embed,
+                            subtitles_langs: settings.subtitles_langs || 'zh,en',
+                            subtitles_bilingual_layout: burnin ? (settings.subtitles_bilingual_layout || '') : '',
+                            dry_run: false,
+                        },
+                    }), '扫描重建失败');
+
+                    const list = Array.isArray(resp?.tasks) ? resp.tasks : [];
+                    if (list.length) {
+                        list.forEach(upsertTask);
+                        selectTask(list[0].task_id);
+                        inspectorOpen.value = true;
+                        showAddSheet.value = false;
+                        showRebuildSheet.value = false;
+                    } else {
+                        await refreshTasks();
+                        showRebuildSheet.value = false;
+                    }
+
+                    const report = resp?.report || {};
+                    const pending = Number(report.pending_count || 0);
+                    const missing = Number(report.missing_count || 0);
+                    const baseMsg = resp?.message || `扫描完成：待补处理 ${pending}，缺字幕 ${missing}`;
+                    if (list.length > 0) {
+                        pushToast(baseMsg, 'ok', 5200);
+                    } else if (pending > 0 || missing > 0) {
+                        pushToast(baseMsg, 'warn', 6200);
+                    } else {
+                        pushToast(baseMsg, 'ok', 3600);
+                    }
+                } catch (e) {
+                    pushToast(`扫描重建失败：${e.message || e}`, 'error', 6200);
+                } finally {
+                    rebuildBusy.value = false;
+                }
+            };
+
+            const scanAndRebuild = () => {
+                openRebuildSheet();
+            };
+
+            const saveSettings = async () => {
+                savingSettings.value = true;
+                try {
+                    const resp = expectSuccess(await request('/api/config', {
+                        method: 'POST',
+                        body: {
+                            default_path: composer.path,
+                            proxy: settings.proxy,
+                            max_concurrent: settings.max_concurrent,
+                            filename_template: settings.filename_template,
+                            auto_open: settings.auto_open,
+                            subtitles_download: settings.subtitles_download,
+                            subtitles_embed: settings.subtitles_embed,
+                            subtitles_burnin: settings.subtitles_burnin,
+                            subtitles_langs: settings.subtitles_langs,
+                            subtitles_translate: settings.subtitles_translate,
+                            subtitles_codex_strict: !!settings.subtitles_codex_strict,
+                            subtitles_transcribe_missing: !!settings.subtitles_transcribe_missing,
+                            subtitles_bilingual_layout: settings.subtitles_bilingual_layout,
+                            cookies_file: settings.cookies_file,
+                            stability_mode: !!settings.stability_mode,
+                        },
+                    }), '保存设置失败');
+
+                    if (resp?.config?.default_path) {
+                        composer.path = resp.config.default_path;
+                    }
+
+                    showSettings.value = false;
+                    await refreshHealth();
+                    pushToast('设置已保存。', 'ok');
+                } catch (e) {
+                    pushToast(`保存设置失败：${e.message || e}`, 'error');
+                } finally {
+                    savingSettings.value = false;
+                }
+            };
+
+            const chooseDirectoryNative = () => new Promise((resolve) => {
+                const bridge = window.webkit?.messageHandlers?.appBridge;
+                if (!bridge) {
+                    resolve(null);
+                    return;
+                }
+                const previous = window.__nativeChooseDirectoryResult;
+                window.__nativeChooseDirectoryResult = (path) => {
+                    window.__nativeChooseDirectoryResult = previous;
+                    resolve(path || null);
+                };
+                try {
+                    bridge.postMessage({
+                        action: 'chooseDirectory',
+                        currentPath: composer.path || '',
+                    });
+                } catch (_) {
+                    window.__nativeChooseDirectoryResult = previous;
+                    resolve(null);
+                }
+            });
+
+            const chooseFileNative = (options = {}) => new Promise((resolve) => {
+                const bridge = window.webkit?.messageHandlers?.appBridge;
+                if (!bridge) {
+                    resolve(null);
+                    return;
+                }
+                const previous = window.__nativeChooseFileResult;
+                window.__nativeChooseFileResult = (path) => {
+                    window.__nativeChooseFileResult = previous;
+                    resolve(path || null);
+                };
+                try {
+                    bridge.postMessage({
+                        action: 'chooseFile',
+                        currentPath: options.currentPath || '',
+                        allowedExtensions: options.allowedExtensions || [],
+                        message: options.message || '选择文件',
+                    });
+                } catch (_) {
+                    window.__nativeChooseFileResult = previous;
+                    resolve(null);
+                }
+            });
+
+            const changePath = async () => {
+                let nextPath = await chooseDirectoryNative();
+                if (!nextPath) {
+                    const typed = window.prompt('请输入保存目录路径', composer.path || '');
+                    nextPath = typed && typed.trim() ? typed.trim() : '';
+                }
+                if (!nextPath) return;
+                composer.path = nextPath;
+                pushToast('保存目录已更新。', 'ok', 2200);
+            };
+
+            const chooseCookiesFile = async () => {
+                let nextPath = await chooseFileNative({
+                    currentPath: settings.cookies_file || composer.path || '',
+                    allowedExtensions: ['txt'],
+                    message: '选择从浏览器导出的 cookies.txt',
+                });
+                if (!nextPath) {
+                    const typed = window.prompt('请输入 cookies.txt 文件路径', settings.cookies_file || '');
+                    nextPath = typed && typed.trim() ? typed.trim() : '';
+                }
+                if (!nextPath) return;
+                settings.cookies_file = nextPath;
+                pushToast('cookies.txt 路径已填入，保存设置后生效。', 'ok', 2600);
+            };
+
+            const updateYtdlp = async () => {
+                if (updatingYtdlp.value) return;
+                updatingYtdlp.value = true;
+                try {
+                    const resp = expectSuccess(await request('/api/update_ytdlp', { method: 'POST', body: {} }), 'yt-dlp 更新失败');
+                    await refreshHealth();
+                    pushToast(resp?.message || 'yt-dlp 已更新。', 'ok', 5200);
+                } catch (e) {
+                    pushToast(`yt-dlp 更新失败：${e.message || e}`, 'error', 6200);
+                } finally {
+                    updatingYtdlp.value = false;
+                }
+            };
+
+            const copyText = async (text) => {
+                if (!text) return;
+                try {
+                    await navigator.clipboard.writeText(text);
+                    pushToast('已复制到剪贴板。', 'ok', 2200);
+                } catch (_) {
+                    pushToast('复制失败，请检查系统权限。', 'warn');
+                }
+            };
+
+            const outputFileName = (path) => {
+                const parts = String(path || '').split(/[\\/]/);
+                return parts[parts.length - 1] || String(path || '');
+            };
+
+            const taskEngineLogText = (task) => {
+                const lines = Array.isArray(task?.engine_log) ? task.engine_log : [];
+                return lines.join('\n');
+            };
+
+            const copyTaskEngineLog = async (task) => {
+                const text = taskEngineLogText(task);
+                if (!text) {
+                    pushToast('当前任务还没有引擎日志。', 'warn', 2200);
+                    return;
+                }
+                await copyText(text);
+            };
+
+            const selectTask = (taskId) => {
+                selectedTaskId.value = taskId;
+                if (window.innerWidth < 1100) {
+                    showMobileInspector.value = true;
+                } else {
+                    inspectorOpen.value = true;
+                }
+            };
+
+            const toggleInspector = () => {
+                if (!selectedTask.value) return;
+                inspectorOpen.value = !inspectorOpen.value;
+            };
+
+            const focusTask = (taskId) => {
+                if (!taskId) return;
+                selectTask(taskId);
+            };
+
+            const setFilter = (key) => {
+                activeFilter.value = key;
+            };
+
+            const canCancelTask = (status) => {
+                return ['queued', 'preparing', 'downloading', 'processing', 'review_pending', 'paused'].includes(status);
+            };
+
+            const TASK_STEP_KEYS = ['download', 'subtitle', 'translate', 'burnin', 'complete'];
+
+            const taskNeedsSubtitleStep = (task) => {
+                if (!task || task.type !== 'video') return false;
+                return Boolean(
+                    task.subtitle_only
+                    || task.subtitles_download
+                    || task.subtitles_embed
+                    || task.subtitles_burnin
+                    || String(task.subtitles_translate || '').trim()
+                    || subtitleRetryTargets(task).length
+                );
+            };
+
+            const taskNeedsTranslateStep = (task) => {
+                if (!task || task.type !== 'video') return false;
+                return Boolean(String(task.subtitles_translate || '').trim());
+            };
+
+            const taskNeedsBurninStep = (task) => {
+                if (!task || task.type !== 'video') return false;
+                return Boolean(task.subtitles_burnin || task.subtitles_embed);
+            };
+
+            const taskStepLabels = (task) => {
+                const mergeMode = Boolean(task?.subtitles_embed) && !Boolean(task?.subtitles_burnin);
+                return {
+                    download: '下载',
+                    subtitle: '字幕',
+                    translate: '翻译',
+                    burnin: mergeMode ? '合并' : '烧录',
+                    complete: '完成',
+                };
+            };
+
+            const inferTaskStepKey = (task) => {
+                if (!task) return 'download';
+                const status = String(task.status || '');
+                const noteRaw = String(task.subtitle_note || '');
+                const note = noteRaw.toLowerCase();
+                const hasSubtitleHint = /(字幕|subtitle)/i.test(noteRaw);
+                const hasTranslateHint = /(翻译|translate)/i.test(noteRaw) || note.includes('.bilingual') || note.includes('.zh');
+                const hasBurninHint = /(烧录|合并|burn|mux|转码)/i.test(noteRaw);
+
+                if (status === 'completed') return 'complete';
+                if (status === 'review_pending') return 'burnin';
+
+                if (hasBurninHint) return 'burnin';
+                if (hasTranslateHint) return 'translate';
+                if (hasSubtitleHint) return 'subtitle';
+
+                if (status === 'downloading') {
+                    return task.subtitle_only ? 'subtitle' : 'download';
+                }
+                if (status === 'processing') {
+                    if (task.subtitle_only) return 'subtitle';
+                    if (taskNeedsBurninStep(task)) return 'burnin';
+                    if (taskNeedsTranslateStep(task)) return 'translate';
+                    if (taskNeedsSubtitleStep(task)) return 'subtitle';
+                    return 'download';
+                }
+                if (status === 'paused' || status === 'error' || status === 'canceled') {
+                    if (hasBurninHint) return 'burnin';
+                    if (hasTranslateHint) return 'translate';
+                    if (hasSubtitleHint) return 'subtitle';
+                    if (task.subtitle_only) return 'subtitle';
+                    if (Number(task.progress || 0) >= 99 && taskNeedsSubtitleStep(task)) return 'subtitle';
+                    return 'download';
+                }
+                if (status === 'queued' || status === 'preparing') {
+                    return task.subtitle_only ? 'subtitle' : 'download';
+                }
+                return 'download';
+            };
+
+            const taskStepModel = (task) => {
+                const labels = taskStepLabels(task);
+                const keys = task?.type === 'audio' ? ['download', 'complete'] : TASK_STEP_KEYS;
+                const required = {
+                    download: !Boolean(task?.subtitle_only),
+                    subtitle: taskNeedsSubtitleStep(task),
+                    translate: taskNeedsTranslateStep(task),
+                    burnin: taskNeedsBurninStep(task),
+                    complete: true,
+                };
+                const currentKey = inferTaskStepKey(task);
+                const currentIdx = Math.max(0, keys.indexOf(currentKey));
+                const status = String(task?.status || '');
+                const isError = status === 'error';
+                const isPaused = status === 'paused' || status === 'review_pending' || status === 'canceled';
+                const isCompleted = status === 'completed';
+
+                const steps = keys.map((key, idx) => {
+                    let state = 'pending';
+                    if (key !== 'complete' && !required[key]) {
+                        state = 'skipped';
+                    } else if (isCompleted) {
+                        state = key === 'complete' ? 'active' : 'done';
+                    } else if (idx < currentIdx) {
+                        state = 'done';
+                    } else if (idx === currentIdx) {
+                        if (isError) state = 'error';
+                        else if (isPaused) state = 'paused';
+                        else state = 'active';
+                    }
+                    return { key, label: labels[key], state, required: Boolean(required[key]) };
+                });
+
+                return { currentKey, steps };
+            };
+
+            const taskStepLinkClass = (task, index) => {
+                const steps = taskStepModel(task).steps;
+                const left = steps[index];
+                if (!left) return '';
+                if (left.state === 'error') return 'link-error';
+                if (left.state === 'active' || left.state === 'paused') return 'link-active';
+                if (left.state === 'done' || left.state === 'skipped') return 'link-done';
+                return '';
+            };
+
+            const taskStepCurrentLabel = (task) => {
+                if (!task) return '当前：下载';
+                const model = taskStepModel(task);
+                const key = model.currentKey;
+                const labels = taskStepLabels(task);
+                const stageLabel = labels[key] || '下载';
+                const status = String(task.status || '');
+
+                if (status === 'completed') {
+                    const missing = subtitleRetryTargets(task).length;
+                    return missing > 0 ? `完成（缺失 ${missing}）` : '流程完成';
+                }
+                if (status === 'review_pending') {
+                    return '等待确认继续烧录';
+                }
+                if (status === 'paused') {
+                    return `暂停于：${stageLabel}`;
+                }
+                if (status === 'canceled') {
+                    return `已取消：${stageLabel}`;
+                }
+                if (status === 'error') {
+                    return `失败于：${stageLabel}`;
+                }
+                return `当前：${stageLabel}`;
+            };
+
+            const parseIsoMs = (raw) => {
+                if (!raw) return 0;
+                const ts = Date.parse(String(raw));
+                return Number.isFinite(ts) ? ts : 0;
+            };
+
+            const formatDuration = (ms) => {
+                let sec = Math.max(0, Math.floor(Number(ms || 0) / 1000));
+                if (!Number.isFinite(sec) || sec <= 0) return '0s';
+                if (sec < 60) return `${sec}s`;
+                if (sec < 3600) {
+                    const m = Math.floor(sec / 60);
+                    const s = sec % 60;
+                    return `${m}m ${s}s`;
+                }
+                const h = Math.floor(sec / 3600);
+                const m = Math.floor((sec % 3600) / 60);
+                if (h < 24) return `${h}h ${m}m`;
+                const d = Math.floor(h / 24);
+                const hh = h % 24;
+                return `${d}d ${hh}h`;
+            };
+
+            const parseTaskStepFraction = (task) => {
+                const note = String(task?.subtitle_note || '');
+                let m = note.match(/[（(]\s*(\d+)\s*\/\s*(\d+)\s*[)）]/);
+                if (!m) {
+                    m = note.match(/(?:^|[^\d])(\d+)\s*\/\s*(\d+)(?:[^\d]|$)/);
+                }
+                if (!m) return null;
+                const current = Number(m[1] || 0);
+                const total = Number(m[2] || 0);
+                if (!Number.isFinite(current) || !Number.isFinite(total) || total <= 0) return null;
+                return { current: Math.max(0, current), total: Math.max(1, total) };
+            };
+
+            const taskStepCountInfo = (task) => {
+                if (!task) return null;
+                const parsed = parseTaskStepFraction(task);
+                if (parsed) return parsed;
+
+                const targetTotal = Array.isArray(task.subtitle_target_files) ? task.subtitle_target_files.length : 0;
+                const done = Math.max(
+                    0,
+                    Number(task.subtitle_processed_files || 0)
+                    + Number(task.subtitle_skipped_files || 0)
+                    + Number(task.subtitle_failed_count || 0)
+                );
+
+                if (targetTotal > 0) {
+                    let current = Math.min(done, targetTotal);
+                    if (task.status === 'completed') current = targetTotal;
+                    return { current, total: targetTotal };
+                }
+
+                if (done > 1) {
+                    return { current: done, total: done };
+                }
+
+                if (task.subtitle_only) {
+                    return { current: task.status === 'completed' ? 1 : Math.min(done, 1), total: 1 };
+                }
+
+                return null;
+            };
+
+            const taskStepCountLabel = (task) => {
+                const info = taskStepCountInfo(task);
+                if (!info) return '数量：单项任务';
+                if (info.total <= 1) return '数量：单项任务';
+                const safeCurrent = Math.max(0, Math.min(info.current, info.total));
+                return `数量：第 ${safeCurrent}/${info.total} 个`;
+            };
+
+            const taskStepTimeLabel = (task) => {
+                if (!task || !task.task_id) return '时间：--';
+                const now = nowTick.value;
+                const id = String(task.task_id);
+                const clock = taskStepClock[id] || {};
+                const createdMs = parseIsoMs(task.created_at);
+                let totalStart = createdMs || clock.firstSeenAt || now;
+                if (totalStart > now) totalStart = now;
+
+                let stepStart = clock.startedAt || totalStart;
+                if (stepStart < totalStart) stepStart = totalStart;
+                if (stepStart > now) stepStart = now;
+
+                const totalText = formatDuration(now - totalStart);
+                if (task.status === 'completed' || task.status === 'canceled') {
+                    return `时间：总 ${totalText}`;
+                }
+                return `时间：总 ${totalText} · 本步 ${formatDuration(now - stepStart)}`;
+            };
+
+            const syncTaskStepClock = () => {
+                const now = Date.now();
+                const activeIds = new Set();
+                for (const task of tasks.value) {
+                    const id = String(task?.task_id || '');
+                    if (!id) continue;
+                    activeIds.add(id);
+
+                    const stepKey = inferTaskStepKey(task);
+                    const fingerprint = `${task.status || ''}|${stepKey}`;
+                    const createdMs = parseIsoMs(task.created_at) || now;
+                    const prev = taskStepClock[id];
+                    if (!prev) {
+                        taskStepClock[id] = {
+                            fingerprint,
+                            startedAt: now,
+                            firstSeenAt: createdMs,
+                        };
+                        continue;
+                    }
+
+                    if (!prev.firstSeenAt || prev.firstSeenAt > createdMs) {
+                        prev.firstSeenAt = createdMs;
+                    }
+                    if (prev.fingerprint !== fingerprint) {
+                        prev.fingerprint = fingerprint;
+                        prev.startedAt = now;
+                    }
+                }
+
+                for (const id of Object.keys(taskStepClock)) {
+                    if (!activeIds.has(id)) {
+                        delete taskStepClock[id];
+                    }
+                }
+            };
+
+            const taskStatusLabel = (task) => {
+                const map = {
+                    queued: '排队中',
+                    preparing: '准备中',
+                    downloading: `${Math.round(task.progress || 0)}%`,
+                    processing: '处理中',
+                    review_pending: '待审核',
+                    paused: '已暂停',
+                    completed: '已完成',
+                    error: '错误',
+                    canceled: '已取消',
+                };
+                return map[task.status] || task.status;
+            };
+
+            const taskStatusClass = (status) => {
+                if (status === 'completed') return 'status-ok';
+                if (status === 'review_pending' || status === 'paused') return 'status-warn';
+                if (status === 'error') return 'status-error';
+                if (status === 'downloading' || status === 'preparing' || status === 'processing') return 'status-accent';
+                return 'status-muted';
+            };
+
+            const taskProgressStyle = (task) => {
+                let bg = 'var(--accent)';
+                if (task.status === 'completed') bg = 'var(--success)';
+                if (task.status === 'paused' || task.status === 'review_pending') bg = 'var(--warning)';
+                if (task.status === 'error') bg = 'var(--danger)';
+                if (task.status === 'canceled') bg = '#8892a0';
+
+                let width = 0;
+                if (['preparing', 'processing'].includes(task.status)) {
+                    width = 100;
+                } else {
+                    width = Math.max(0, Math.min(100, Number(task.progress || 0)));
+                }
+
+                return { width: `${width}%`, '--progress-color': bg };
+            };
+
+            const taskProgressClass = (status) => {
+                if (status === 'downloading') return 'progress-running';
+                if (['preparing', 'processing'].includes(status)) return 'progress-indeterminate';
+                return '';
+            };
+
+            const taskSubtitleLayoutHint = (task) => {
+                if (!task || task.type !== 'video') return '';
+                if (!task.subtitles_burnin) return '';
+                return task.subtitles_bilingual_layout === 'split_cn_top_en_bottom'
+                    ? '字幕布局：中上 / 英下'
+                    : '';
+            };
+
+            const taskSubtitleLayoutModeLabel = (task) => {
+                if (!task || task.type !== 'video') return '不适用';
+                if (!task.subtitles_burnin) return '未启用硬字幕烧录';
+                return task.subtitles_bilingual_layout === 'split_cn_top_en_bottom'
+                    ? '中文在上，英文在下'
+                    : '标准双行（底部）';
+            };
+
+            const taskSubtitleLayoutPreviewEligible = (task) => {
+                return Boolean(task && task.type === 'video' && task.subtitles_burnin);
+            };
+
+            const taskSubtitleLayoutPreviewLines = (task) => {
+                if (!taskSubtitleLayoutPreviewEligible(task)) {
+                    return [];
+                }
+                if (task.subtitles_bilingual_layout === 'split_cn_top_en_bottom') {
+                    return [
+                        { key: 'cn-top', text: '中文字幕示意', align: 'top' },
+                        { key: 'en-bottom', text: 'English subtitle preview', align: 'bottom' },
+                    ];
+                }
+                return [
+                    { key: 'stacked', text: 'English subtitle preview\n中文字幕示意', align: 'bottom' },
+                ];
+            };
+
+            const taskToneClass = (status) => {
+                if (status === 'completed') return 'tone-ok';
+                if (status === 'review_pending' || status === 'paused') return 'tone-warn';
+                if (status === 'error') return 'tone-error';
+                return '';
+            };
+
+            const taskRuntimeHint = (task) => {
+                if (task.status === 'downloading') {
+                    return `${task.speed || '0 KB/s'} · ETA ${task.eta || '--'}`;
+                }
+                if (task.status === 'processing') {
+                    return '转码处理中...';
+                }
+                if (task.status === 'preparing') {
+                    return '资源解析中...';
+                }
+                if (task.status === 'paused') {
+                    return '任务已暂停，等待继续';
+                }
+                if (task.status === 'completed') {
+                    const missing = subtitleRetryTargets(task).length;
+                    if (missing > 0) {
+                        return `已完成，仍有 ${missing} 项待补处理`;
+                    }
+                    return '下载已完成';
+                }
+                if (task.status === 'canceled') {
+                    return '任务已取消';
+                }
+                if (task.status === 'review_pending') {
+                    return '等待字幕人工审核';
+                }
+                return task.eta || '--';
+            };
+
+            const syncTaskErrors = () => {
+                if (!taskErrorBootstrapped) {
+                    for (const task of tasks.value) {
+                        if (task.status === 'error' && task.error_message) {
+                            taskErrorState.set(task.task_id, `${task.status}|${task.error_message || ''}`);
+                        }
+                    }
+                    taskErrorBootstrapped = true;
+                    return;
+                }
+
+                const activeIds = new Set();
+                for (const task of tasks.value) {
+                    activeIds.add(task.task_id);
+                    const fingerprint = `${task.status}|${task.error_message || ''}`;
+                    const prev = taskErrorState.get(task.task_id);
+
+                    if (task.status === 'error' && task.error_message) {
+                        if (prev !== fingerprint) {
+                            pushToast(`任务失败：${task.title || task.url}`, 'error');
+                            taskErrorState.set(task.task_id, fingerprint);
+                        }
+                    } else {
+                        taskErrorState.delete(task.task_id);
+                    }
+                }
+
+                for (const id of Array.from(taskErrorState.keys())) {
+                    if (!activeIds.has(id)) {
+                        taskErrorState.delete(id);
+                    }
+                }
+            };
+
+            const openAddSheet = (seedText = '') => {
+                if (seedText && !inputUrls.value.trim()) {
+                    inputUrls.value = seedText;
+                }
+                clearFormatProbe();
+                showAddSheet.value = true;
+            };
+
+            const openLocalSubtitleSheet = () => {
+                openAddSheet();
+                setComposerMode('local_subtitles');
+            };
+
+            const looksLikeUrlBlock = (text) => {
+                if (!text) return false;
+                return /(https?:\/\/|youtu\.be|youtube\.com)/i.test(text);
+            };
+
+            const mergeUrlText = (origin, incoming) => {
+                const cur = (origin || '').trim();
+                const next = (incoming || '').trim();
+                if (!cur) return next;
+                if (!next) return cur;
+                return `${cur}\n${next}`;
+            };
+
+            const extractUrlsFromText = (text) => {
+                if (!text) return [];
+                const matches = String(text).match(/https?:\/\/[^\s<>"'`]+/gi) || [];
+                const deduped = [];
+                const seen = new Set();
+                for (const raw of matches) {
+                    const url = raw.trim();
+                    if (!url || seen.has(url)) continue;
+                    seen.add(url);
+                    deduped.push(url);
+                }
+                return deduped;
+            };
+
+            const ingestUrlText = (rawText) => {
+                const urls = extractUrlsFromText(rawText);
+                if (!urls.length) {
+                    return 0;
+                }
+                inputUrls.value = mergeUrlText(inputUrls.value, urls.join('\n'));
+                openAddSheet();
+                return urls.length;
+            };
+
+            const handleDragEnter = (evt) => {
+                const types = Array.from(evt.dataTransfer?.types || []);
+                if (types.includes('text/plain') || types.includes('text/uri-list')) {
+                    isDropActive.value = true;
+                }
+            };
+
+            const handleDragOver = (evt) => {
+                evt.preventDefault();
+                if (evt.dataTransfer) {
+                    evt.dataTransfer.dropEffect = 'copy';
+                }
+                isDropActive.value = true;
+            };
+
+            const handleDragLeave = (evt) => {
+                const current = evt.currentTarget;
+                const related = evt.relatedTarget;
+                if (!current || !related || !current.contains(related)) {
+                    isDropActive.value = false;
+                }
+            };
+
+            const handleDrop = (evt) => {
+                evt.preventDefault();
+                isDropActive.value = false;
+
+                const dt = evt.dataTransfer;
+                const text = (dt?.getData('text/uri-list') || dt?.getData('text/plain') || '').trim();
+                const count = ingestUrlText(text);
+                if (count > 0) {
+                    pushToast(`已导入 ${count} 个链接。`, 'ok', 2400);
+                } else {
+                    pushToast('未识别到可下载链接。', 'warn', 2600);
+                }
+            };
+
+            const pasteFromClipboard = async () => {
+                openAddSheet();
+                try {
+                    const text = await navigator.clipboard.readText();
+                    if (looksLikeUrlBlock(text)) {
+                        const count = ingestUrlText(text);
+                        if (count > 0) {
+                            pushToast(`已粘贴 ${count} 个链接。`, 'ok', 2200);
+                        }
+                    } else {
+                        pushToast('剪贴板中未检测到有效链接。', 'warn');
+                    }
+                } catch (_) {
+                    pushToast('读取剪贴板失败，请检查系统权限。', 'warn');
+                }
+            };
+
+            const onGlobalKeyDown = async (evt) => {
+                if (!(evt.metaKey || evt.ctrlKey) || evt.key.toLowerCase() !== 'v') {
+                    return;
+                }
+
+                const target = evt.target;
+                const tag = (target?.tagName || '').toLowerCase();
+                const editable = target?.isContentEditable || ['input', 'textarea', 'select'].includes(tag);
+                if (editable) {
+                    return;
+                }
+
+                evt.preventDefault();
+                await pasteFromClipboard();
+            };
+
+            watch(() => composer.type, (t) => {
+                clearFormatProbe();
+                if (t === 'video') {
+                    if (!videoFormats.includes(composer.format)) composer.format = 'mp4';
+                    if (!videoQualities.includes(composer.quality)) composer.quality = '1080';
+                } else {
+                    composer.subtitle_only = false;
+                    composer.subtitle_existing_only = false;
+                    if (!audioFormats.includes(composer.format)) composer.format = 'mp3';
+                    if (!audioQualities.includes(composer.quality)) composer.quality = '192';
+                    composer.subtitle_strategy = 'none';
+                    composer.subtitle_output = 'file';
+                    settings.subtitles_codex_strict = false;
+                }
+            }, { immediate: true });
+
+            watch(() => composer.format, (fmt) => {
+                clearFormatProbe();
+                if (composer.type === 'video') {
+                    if (!videoFormats.includes(fmt)) composer.format = 'mp4';
+                } else if (!audioFormats.includes(fmt)) {
+                    composer.format = 'mp3';
+                }
+
+                if (composer.subtitle_output === 'burn' && fmt !== 'mp4') composer.subtitle_output = 'file';
+                if (composer.subtitle_output === 'soft' && !['mp4', 'mkv'].includes(fmt)) composer.subtitle_output = 'file';
+            }, { immediate: true });
+
+            watch(() => composer.mode, (mode) => {
+                if (mode === 'local_subtitles' && composer.subtitle_strategy === 'none') {
+                    composer.subtitle_strategy = 'bilingual';
+                }
+            });
+
+            watch(() => composer.quality, () => {
+                clearFormatProbe();
+            });
+
+            watch(inputUrls, () => {
+                clearFormatProbe();
+            });
+
+            watch(showAddSheet, (open) => {
+                if (!open) {
+                    clearFormatProbe();
+                }
+            });
+
+            watch(() => composer.subtitle_strategy, (v) => {
+                if (composer.mode === 'local_subtitles' && v === 'none') {
+                    composer.subtitle_strategy = 'en';
+                    return;
+                }
+                if (v === 'none') {
+                    composer.subtitle_output = 'file';
+                    settings.subtitles_codex_strict = false;
+                }
+            });
+
+            watch(() => composer.subtitle_output, (v) => {
+                if (v === 'burn' && !canBurninSubtitles.value) composer.subtitle_output = 'file';
+                if (v === 'soft' && !canEmbedSubtitles.value) composer.subtitle_output = 'file';
+            });
+
+            watch(selectedTaskId, () => {
+                subtitleLayoutPreviewOpen.value = false;
+            });
+
+            watch(tasks, () => {
+                syncTaskErrors();
+                syncTaskStepClock();
+                refreshIcons();
+            }, { deep: true });
+
+            onMounted(async () => {
+                await bootstrap();
+                syncTaskStepClock();
+                connectWS();
+                startPolling();
+                clockTimer = setInterval(() => {
+                    nowTick.value = Date.now();
+                }, 1000);
+                window.addEventListener('keydown', onGlobalKeyDown);
+                refreshIcons();
+            });
+
+            onBeforeUnmount(() => {
+                destroyed = true;
+                window.removeEventListener('keydown', onGlobalKeyDown);
+                if (heartbeatTimer) clearInterval(heartbeatTimer);
+                if (reconnectTimer) clearTimeout(reconnectTimer);
+                if (pollingTimer) clearInterval(pollingTimer);
+                if (clockTimer) clearInterval(clockTimer);
+                if (ws) {
+                    try { ws.close(); } catch (_) {}
+                }
+            });
+
+            return {
+                showAddSheet,
+                showSettings,
+                showRebuildSheet,
+                showMobileInspector,
+                inspectorOpen,
+                subtitleLayoutPreviewOpen,
+                downloadingSubmit,
+                rebuildBusy,
+                savingSettings,
+                updatingYtdlp,
+                wsConnected,
+                isDropActive,
+                inputUrls,
+                formatProbeBusy,
+                formatProbeResult,
+                formatProbeError,
+                tasks,
+                selectedTaskId,
+                activeFilter,
+                selectedTask,
+                queueStats,
+                filteredTasks,
+                latestErrorTask,
+                runtimePortLabel,
+                hasPausableTasks,
+                hasResumableTasks,
+                overallProgress,
+                aggregateSpeedLabel,
+                health,
+                composer,
+                settings,
+                rebuildForm,
+                toasts,
+                canEmbedSubtitles,
+                canBurninSubtitles,
+                submitDisabled,
+                setComposerMode,
+                probeFormats,
+                applyProbeRecommendation,
+                startDownload,
+                pauseTask,
+                resumeTask,
+                pauseAll,
+                resumeAll,
+                cancelTask,
+                removeTask,
+                clearCompleted,
+                continueBurnin,
+                analyzeMissingSubtitles,
+                retryMissingSubtitles,
+                scanAndRebuild,
+                openRebuildSheet,
+                runRebuildScan,
+                saveSettings,
+                changePath,
+                chooseCookiesFile,
+                updateYtdlp,
+                refreshTasks,
+                copyText,
+                outputFileName,
+                taskEngineLogText,
+                copyTaskEngineLog,
+                pasteFromClipboard,
+                selectTask,
+                focusTask,
+                setFilter,
+                toggleInspector,
+                canCancelTask,
+                taskStatusLabel,
+                taskStatusClass,
+                taskProgressStyle,
+                taskProgressClass,
+                taskSubtitleLayoutHint,
+                taskSubtitleLayoutModeLabel,
+                taskSubtitleLayoutPreviewEligible,
+                taskSubtitleLayoutPreviewLines,
+                taskToneClass,
+                taskStepModel,
+                taskStepLinkClass,
+                taskStepCurrentLabel,
+                taskStepCountLabel,
+                taskStepTimeLabel,
+                taskRuntimeHint,
+                subtitleRetryTargets,
+                subtitleRetryPreview,
+                shouldOfferAnalyzeMissing,
+                openAddSheet,
+                openLocalSubtitleSheet,
+                openProbeSheet,
+                handleDragEnter,
+                handleDragOver,
+                handleDragLeave,
+                handleDrop,
+                removeToast,
+                toastTitle,
+                toastClass,
+                toastTypeClass,
+                toastIcon,
+            };
+        },
+    }).mount('#app');
+</script>
+</body>
+</html>
